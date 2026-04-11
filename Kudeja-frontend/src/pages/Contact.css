@@ -1,0 +1,116 @@
+.contact-page {
+  padding: 4rem 0;
+  background: var(--bg-body);
+  transition: background-color var(--transition);
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 2rem;
+}
+
+.contact-info {
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.contact-info h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--text-main);
+}
+
+.contact-info p {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.info-item {
+  margin-bottom: 1.5rem;
+}
+
+.info-item strong {
+  display: block;
+  color: var(--text-main);
+  margin-bottom: 0.3rem;
+}
+
+.info-item p {
+  margin: 0;
+  color: #555;
+}
+
+.contact-form-container {
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.contact-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.contact-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-body);
+  color: var(--text-main);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+
+.contact-form textarea {
+  resize: vertical;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.success-message {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-message h3 {
+  font-size: 2rem;
+  color: #28a745;
+  margin-bottom: 1rem;
+}
+
+.success-message p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

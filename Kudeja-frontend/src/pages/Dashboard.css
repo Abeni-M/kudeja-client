@@ -1,0 +1,110 @@
+.dashboard-page {
+  padding: 4rem 0;
+  background: var(--bg-body);
+  min-height: 80vh;
+  transition: background-color var(--transition);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.profile-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+}
+
+.profile-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+  color: var(--text-main);
+}
+
+.profile-card p {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.member-since {
+  font-size: 0.9rem;
+  color: #999;
+  margin-bottom: 1.5rem;
+}
+
+.recent-orders {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.recent-orders h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-main);
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th {
+  text-align: left;
+  padding: 1rem 0.5rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.orders-table td {
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.2rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status.delivered {
+  background: #e8f5e9;
+  color: #28a745;
+}
+
+.status.processing {
+  background: #fff3cd;
+  color: #856404;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

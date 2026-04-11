@@ -1,0 +1,100 @@
+/* Footer.css */
+.footer {
+  margin-top: 4rem;
+  background-color: #0c0f14;
+  color: #ffffff;
+  padding-top: 1rem;
+   backdrop-filter: blur(30px);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.5rem;
+  padding: 0 2rem 2.5rem 2rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: left;
+  flex-direction: column;
+  padding: 1rem 18rem 0 0;
+  gap: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo-img {
+  max-height: 120px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.footer-logo-main {
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: #f9fafb;
+}
+
+.footer-logo-kude,
+.footer-logo-a {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.footer-logo-j {
+  color: #f97373;
+  margin: 0 0.15rem;
+}
+
+.footer-logo-sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: #9ca3af;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  max-width: 320px;
+}
+
+.footer-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+  color: #f9fafb;
+}
+
+.footer-links,
+.footer-contact {
+  font-family: sans-serif Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  hover: #f1430e;
+}
+
+.footer-links li + li,
+.footer-contact li + li {
+  margin-top: 0.4rem;
+}
+
+.footer-links a {
+  color: #e5e7eb;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 0 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
