@@ -31,8 +31,8 @@ router.get('/all', protect, admin, async (req, res) => {
 // @route   POST /api/ads
 router.post('/', protect, admin, async (req, res) => {
   try {
-    const { companyName, address, image, isActive, description, website, phone, email, slideImages, slideInterval } = req.body;
-    const ad = await Ad.create({ companyName, address, image, isActive, description, website, phone, email, slideImages, slideInterval });
+    const { companyName, address, image, isActive, description, website, phone, email, slideImages, slideInterval, placement } = req.body;
+    const ad = await Ad.create({ companyName, address, image, isActive, description, website, phone, email, slideImages, slideInterval, placement });
     res.status(201).json(ad);
   } catch (error) {
     console.error('Error creating ad:', error);
@@ -58,6 +58,7 @@ router.put('/:id', protect, admin, async (req, res) => {
       email: req.body.email !== undefined ? req.body.email : ad.email,
       slideImages: req.body.slideImages !== undefined ? req.body.slideImages : ad.slideImages,
       slideInterval: req.body.slideInterval !== undefined ? req.body.slideInterval : ad.slideInterval,
+      placement: req.body.placement !== undefined ? req.body.placement : ad.placement,
     });
 
     res.json(ad);

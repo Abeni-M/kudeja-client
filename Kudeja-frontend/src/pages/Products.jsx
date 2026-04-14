@@ -7,6 +7,7 @@ import { normalizeProductList } from '../utils/normalizeProduct';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LuSearch, LuFilter, LuArrowUpDown } from 'react-icons/lu';
+import SEO from '../components/SEO';
 import './Products.css';
 
 const Products = () => {
@@ -21,9 +22,9 @@ const Products = () => {
         const res = await getProducts({ limit: 1000 });
         const data = res?.data;
         let list = Array.isArray(data) ? data : (data?.data || data?.products || []);
-        
+
         if (list.length === 0) list = localProducts;
-        
+
         let norms = enrichProductsWithImages(normalizeProductList(list));
         norms = norms.map(norm => {
           if (!norm.imageUrl || norm.imageUrl.trim() === '') {
@@ -46,7 +47,7 @@ const Products = () => {
 
   const filteredProducts = products.filter((p) => {
     const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
-    const matchesSearch = !search.trim() || 
+    const matchesSearch = !search.trim() ||
       p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.description?.toLowerCase().includes(search.toLowerCase()) ||
       p.category?.toLowerCase().includes(search.toLowerCase());
@@ -92,11 +93,15 @@ const Products = () => {
   // Filter and Sort logic moved inside components for reactive updates with useQuery
 
   return (
-    <motion.section 
+    <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="products-page"
     >
+      <SEO
+        title="Our Products"
+        description="Browse Kudeja Trading's extensive catalogue of computers, security cameras, printers, and business equipment in Ethiopia."
+      />
       <div className="container">
         <header className="products-header">
           <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
@@ -144,6 +149,7 @@ const Products = () => {
                   <option value="featured">Featured</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
+                  <option value="new">new products</option>
                 </select>
               </label>
             </div>
@@ -151,7 +157,7 @@ const Products = () => {
         </header>
 
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={selectedCategory + search + sortBy}
             variants={containerVariants}
             initial="hidden"

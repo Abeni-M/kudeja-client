@@ -147,9 +147,28 @@ router.get('/my', protect, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
+        // Reset chat history into "sessions" if there is a gap > 3 hours
+        const SESSION_TIMEOUT_MS = 3 * 60 * 60 * 1000;
+        let cutoffIndex = messages.length;
+        
+        // messages are ordered DESC (newest at index 0)
+        for (let i = 0; i < messages.length - 1; i++) {
+            const currentMsgDate = new Date(messages[i].createdAt); // newer
+            const prevMsgDate = new Date(messages[i+1].createdAt);  // older
+            
+            if (currentMsgDate - prevMsgDate > SESSION_TIMEOUT_MS) {
+                // Gap of more than 3 hours found!
+                // Discard messages from i+1 onwards as they belong to an older session.
+                cutoffIndex = i + 1;
+                break;
+            }
+        }
+        
+        const activeSessionMessages = messages.slice(0, cutoffIndex);
+
         res.json({
             success: true,
-            data: messages
+            data: activeSessionMessages
         });
     } catch (error) {
         res.status(500).json({

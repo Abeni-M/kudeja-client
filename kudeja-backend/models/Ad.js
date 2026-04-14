@@ -38,6 +38,11 @@ const Ad = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    placement: {
+      type: DataTypes.STRING,
+      defaultValue: 'sidebar',
+      allowNull: false,
+    },
     website: {
       type: DataTypes.STRING,
       allowNull: true,

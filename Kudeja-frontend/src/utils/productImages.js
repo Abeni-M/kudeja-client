@@ -59,6 +59,12 @@ export function getProductImageUrl(image) {
   if (isUrl(image)) return image;
 
   const raw = String(image).trim();
+  
+  // If the image is already a relative path starting with '/', just return it as is
+  if (raw.startsWith('/')) {
+    return raw;
+  }
+
   if (byFilename[raw]) return byFilename[raw];
 
   const normalized = normalizeFilename(raw);
@@ -67,7 +73,7 @@ export function getProductImageUrl(image) {
   const { base } = splitBaseAndExt(normalized);
   if (byBaseNormalized[base]) return byBaseNormalized[base];
 
-  // Fallback to public folder image path (works even if you don't bundle images)
+  // Fallback to public folder image path
   return `/images/${encodeURIComponent(raw)}`;
 }
 

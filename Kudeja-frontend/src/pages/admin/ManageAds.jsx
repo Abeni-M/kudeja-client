@@ -160,7 +160,7 @@ const ManageAds = () => {
   const emptyForm = {
     companyName: '', address: '', description: '',
     website: '', phone: '', email: '', image: '', isActive: true,
-    slideImages: [], slideInterval: 5,
+    slideImages: [], slideInterval: 5, placement: 'sidebar'
   };
   const [formData, setFormData] = useState(emptyForm);
 
@@ -189,6 +189,7 @@ const ManageAds = () => {
       email: ad.email || '',
       image: ad.image || '',
       isActive: ad.isActive,
+      placement: ad.placement || 'sidebar',
       slideImages: Array.isArray(ad.slideImages) ? ad.slideImages : (typeof ad.slideImages === 'string' ? JSON.parse(ad.slideImages || '[]') : []),
       slideInterval: ad.slideInterval || 5,
     } : emptyForm);
@@ -279,6 +280,7 @@ const ManageAds = () => {
                 <tr>
                   <th>Image</th>
                   <th>Company Name</th>
+                  <th>Placement</th>
                   <th>Address</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -302,6 +304,11 @@ const ManageAds = () => {
                       )}
                     </td>
                     <td style={{ fontWeight: 600 }}>{ad.companyName + ' - ' + ad.description}</td>
+                    <td>
+                      <span className={`admin-pill ${ad.placement === 'banner' ? 'admin-pill-warning' : 'admin-pill-secondary'}`}>
+                        {ad.placement === 'banner' ? '⭐ Premium Banner' : 'Sidebar'}
+                      </span>
+                    </td>
                     <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--admin-muted)' }}>
                       {ad.address}
                     </td>
@@ -371,6 +378,18 @@ const ManageAds = () => {
               <div className="admin-form-group">
                 <label>Phone Number <span style={{ color: 'var(--admin-muted)', fontSize: '0.8rem' }}>(optional)</span></label>
                 <input type="text" style={inputStyle} value={formData.phone} onChange={set('phone')} placeholder="e.g. +251 9XXXXXXXX" />
+              </div>
+
+              {/* Placement Selector */}
+              <div className="admin-form-group">
+                <label>Ad Placement (Type) *</label>
+                <select style={inputStyle} value={formData.placement} onChange={set('placement')} required>
+                  <option value="sidebar">📱 Standard Vertical Sidebar</option>
+                  <option value="banner">🖥️ Premium Horizontal Top Banner</option>
+                </select>
+                <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--admin-muted)' }}>
+                  Premium banners span across the top of the Home dashboard.
+                </p>
               </div>
 
               {/* Email */}

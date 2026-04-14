@@ -1,6 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const crypto = require('crypto');
 const router = express.Router();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const User = require('../models/user');
 const { protect } = require('../middleware/authMiddleware');
@@ -88,6 +92,53 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     console.error('Register error:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/google
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ success: false, message: 'Google credential is required' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const name = payload.name;
+
+    let user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      // Create user if not exists.
+      // We must satisfy the strict password validation, so generate a secure random password.
+      const secureRandomPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
+      
+      user = await User.create({
+        username: name || email.split('@')[0],
+        email: email,
+        password: secureRandomPassword,
+      });
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({ success: false, message: 'Account is disabled' });
+    }
+
+    const token = signToken(user);
+    return res.json({
+      success: true,
+      message: 'Google login successful',
+      token,
+      user: user.toJSON(),
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    return res.status(401).json({ success: false, message: 'Invalid Google credential' });
   }
 });
 

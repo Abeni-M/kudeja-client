@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaFacebook, FaInstagram, FaTelegram, FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import './Footer.css';
 
 function Footer() {
@@ -17,6 +18,23 @@ function Footer() {
           <p className="footer-text">
             Your trusted partner in quality products, logistics, and trading solutions across Ethiopia and beyond.
           </p>
+          <div className="footer-social-icons">
+            <a href="https://t.me/only_by_jesus" target="_blank" rel="noopener noreferrer" className="social-icon telegram" title="Join our Telegram Channel">
+              <FaTelegram size={20} />
+            </a>
+            <a href="https://wa.me/251911430926" target="_blank" rel="noopener noreferrer" className="social-icon whatsapp" title="Chat on WhatsApp">
+              <FaWhatsapp size={20} />
+            </a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon facebook" title="Follow us on Facebook">
+              <FaFacebook size={20} />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon instagram" title="Follow us on Instagram">
+              <FaInstagram size={20} />
+            </a>
+            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="social-icon tiktok" title="Follow us on TikTok">
+              <FaTiktok size={20} />
+            </a>
+          </div>
         </div>
 
         <div className="footer-column">

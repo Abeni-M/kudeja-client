@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { LuStar, LuChevronDown, LuChevronUp, LuShoppingCart } from 'react-icons/lu';
 import ProductCard from '../components/ProductCard';
 import toast from 'react-hot-toast';
+import SEO from '../components/SEO';
 import './ProductDetail.css';
 import fallbackPlaceholder from '../images/images.jpg';
 
@@ -161,6 +162,11 @@ const ProductDetail = () => {
 
   return (
     <section className="product-detail-page">
+      <SEO 
+        title={product.name} 
+        description={product.description || `Buy ${product.name} at Kudeja Trading PLC for ETB ${product.price}. High quality products in Ethiopia.`}
+        image={product.imageUrl}
+      />
       <div className="container">
         <div className="product-detail-grid">
           <div className="product-info">

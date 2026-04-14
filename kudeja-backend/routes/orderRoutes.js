@@ -4,6 +4,7 @@ const router = express.Router();
 const { Order, Notification, Product } = require('../models');
 const { protect } = require('../middleware/authMiddleware');
 const { requirePermission } = require('../middleware/permissions');
+const { sendOrderReceipt, sendAdminAlert } = require('../utils/emailService');
 
 // @route   GET /api/orders
 // @desc    List orders for current user
@@ -93,6 +94,22 @@ router.post('/', protect, async (req, res) => {
       message: `New order #${String(order.id).slice(0, 8)} was placed`,
       type: 'info',
       targetId: order.id
+    });
+
+    // Send emails (these run asynchronously without completely blocking the response)
+    sendOrderReceipt(req.user.email, {
+      id: order.id,
+      items,
+      total: totalNumber,
+      status: order.status,
+      paymentMethod: order.payment_method,
+      shippingAddress,
+    });
+    
+    sendAdminAlert({
+      id: order.id,
+      total: totalNumber,
+      paymentMethod: order.payment_method
     });
 
     return res.status(201).json({

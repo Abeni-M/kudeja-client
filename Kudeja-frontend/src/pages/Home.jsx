@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LuMonitor, LuPrinter, LuShieldCheck, LuCalendar, LuArrowRight } from 'react-icons/lu';
+import { LuMonitor, LuPrinter, LuShieldCheck, LuCalendar, LuArrowRight, LuChevronDown } from 'react-icons/lu';
 import localProducts from '../data/products';
 import ProductCard from '../components/ProductCard';
 import { enrichProductsWithImages, getProductImageUrl } from '../utils/productImages';
@@ -10,6 +10,7 @@ import { normalizeProductList } from '../utils/normalizeProduct';
 import { getProducts } from '../services/productService';
 import { getAds } from '../services/adService';
 import { LuX } from 'react-icons/lu';
+import SEO from '../components/SEO';
 import './Home.css';
 
 function Home() {
@@ -97,10 +98,22 @@ function Home() {
     }
   };
 
+  const sidebarAds = ads.filter(ad => ad.placement !== 'banner');
+  const bannerAds = ads.filter(ad => ad.placement === 'banner');
+
   return (
     <div className="home-page">
+      <SEO 
+        title="Home" 
+        description="Connecting Ethiopian markets with quality international products for over 5 years. Shop electronics, fashion, and general merchandise."
+      />
       <div className="home-layout-container">
         <div className="home-main-content">
+          {/* Top Premium Banner Ads */}
+          {bannerAds && bannerAds.length > 0 && (
+            <TopBannerAds ads={bannerAds} onClick={(ad) => setSelectedAd(ad)} />
+          )}
+
           {/* Hero Section */}
           <section className="hero-section">
         <motion.div 
@@ -157,13 +170,43 @@ function Home() {
               key={index} 
               className="service-card"
               variants={itemVariants}
-              whileHover={{ y: -10, boxShadow: "0 20px 40px rgba(0,0,0,0.12)" }}
+              whileHover="hovered"
+              initial="visible"
             >
-              <div className="service-icon">
-                {service.icon}
+              <div className="service-card-header">
+                <div className="service-icon">
+                  {service.icon}
+                </div>
+                <div className="service-title-wrapper">
+                  <h3>{service.title}</h3>
+                  <p className="service-info-hint">Check details</p>
+                </div>
+                <motion.div
+                  className="service-expand-indicator"
+                  variants={{
+                    hovered: { rotate: 180 }
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <LuChevronDown size={20} />
+                </motion.div>
               </div>
-              <h3>{service.title}</h3>
-              <p>{service.desc}</p>
+              
+              <motion.div
+                className="service-card-description"
+                initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                variants={{
+                  hovered: { 
+                    height: 'auto', 
+                    opacity: 1, 
+                    marginTop: '0.75rem',
+                    transition: { duration: 0.3, ease: 'easeOut' }
+                  }
+                }}
+                style={{ overflow: 'hidden' }}
+              >
+                <p>{service.desc}</p>
+              </motion.div>
             </motion.div>
           ))}
         </motion.div>
@@ -206,11 +249,11 @@ function Home() {
         </div>
 
         {/* Vertical Ads Sidebar */}
-        {ads && ads.length > 0 && (
+        {sidebarAds && sidebarAds.length > 0 && (
           <aside className="home-sidebar-ads">
             <h3 className="sidebar-ads-title">Sponsored Partners</h3>
             <div className="sidebar-ads-list">
-              {ads.map((ad) => (
+              {sidebarAds.map((ad) => (
                 <SidebarAdItem key={ad.id} ad={ad} onClick={() => setSelectedAd(ad)} />
               ))}
             </div>
@@ -373,6 +416,42 @@ const SidebarAdItem = ({ ad, onClick }) => {
           <p className="sidebar-ad-services">{ad.description}</p>
         </div>
       )}
+    </motion.div>
+  );
+};
+
+const TopBannerAds = ({ ads, onClick }) => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    if (ads.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % ads.length);
+    }, 8000); // cycle banners every 8 seconds
+    return () => clearInterval(timer);
+  }, [ads.length]);
+
+  const activeAd = ads[currentIdx];
+  if (!activeAd) return null;
+
+  return (
+    <motion.div 
+      className="top-banner-ad-container"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      onClick={() => onClick(activeAd)}
+    >
+      <div className="top-banner-ad-inner">
+        <span className="top-banner-badge">Sponsor</span>
+        <img 
+          key={activeAd.image}
+          src={activeAd.image} 
+          alt={activeAd.companyName} 
+          className="top-banner-ad-image"
+          onError={e => { e.target.style.display = 'none'; }}
+        />
+      </div>
     </motion.div>
   );
 };

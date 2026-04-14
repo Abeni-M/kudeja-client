@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isValidPasswordStrength, getPasswordRequirementsText } from '../utils/validation';
+import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 import './Register.css';
 
 const Register = () => {
@@ -14,7 +16,7 @@ const Register = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { register, error: authError } = useAuth();
+  const { register, googleLogin, error: authError } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -46,6 +48,23 @@ const Register = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setSubmitting(true);
+      await googleLogin(credentialResponse.credential);
+      toast.success('Successfully logged in with Google');
+      navigate('/');
+    } catch (err) {
+      toast.error('Google login failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Google Login was unsuccessful');
   };
 
   return (
@@ -103,6 +122,16 @@ const Register = () => {
             {submitting ? 'Creating account…' : 'Register'}
           </button>
         </form>
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem', marginBottom: '1rem' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            shape="rectangular"
+            theme="outline"
+          />
+        </div>
+
         <p className="auth-link">
           Already have an account? <Link to="/login">Login</Link>
         </p>
