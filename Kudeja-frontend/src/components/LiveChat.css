@@ -54,14 +54,22 @@
 .chat-window {
     width: 380px;
     height: 550px;
-    background: var(--bg-body);
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    backdrop-filter: blur(20px);
+    transition: all var(--transition);
+}
+
+[data-theme='dark'] .chat-window {
+    background: rgba(31, 41, 55, 0.8);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Chat Header */
@@ -199,11 +207,13 @@
 .message-bubble.user .bubble-content {
     background: var(--primary);
     color: white;
-    border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 4px 15px rgba(209, 27, 27, 0.25);
 }
 
 .message-bubble.user .bubble-time {
     text-align: right;
+    color: var(--text-muted);
 }
 
 .message-bubble.admin {
@@ -211,11 +221,12 @@
 }
 
 .message-bubble.admin .bubble-content {
-    background: var(--bg-card);
+    background: var(--bg-body);
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    border-bottom-left-radius: 4px;
-    white-space: pre-wrap; /* Preserve line breaks from AI */
+    border-bottom-left-radius: 6px;
+    white-space: pre-wrap;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
 .chat-product-link {
@@ -306,4 +317,34 @@
         bottom: 1rem;
         right: 1rem;
     }
+}
+
+/* Typing Indicator Animation */
+.message-bubble.typing .bubble-content {
+    padding: 10px 14px;
+    background: var(--bg-body);
+    width: fit-content;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    height: 20px;
+}
+
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: typing 1s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 100% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(-4px); opacity: 1; }
 }

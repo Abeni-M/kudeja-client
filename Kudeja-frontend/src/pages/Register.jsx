@@ -36,6 +36,17 @@ const Register = () => {
     setError('');
     try {
       setSubmitting(true);
+      
+      // Basic client-side check for username (matching Sequelize length requirements)
+      if (formData.name.length < 3) {
+        setError('Full name (used as username) must be at least 3 characters');
+        return;
+      }
+      if (formData.name.length > 30) {
+        setError('Full name (used as username) must not exceed 30 characters');
+        return;
+      }
+
       await register({
         username: formData.name,
         email: formData.email,
@@ -43,8 +54,9 @@ const Register = () => {
       });
       navigate('/');
     } catch (e) {
-      // AuthContext sets a user-friendly error string; keep local fallback too.
-      setError(authError || 'Registration failed');
+      if (!authError) {
+        setError(e.response?.data?.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }

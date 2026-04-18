@@ -14,6 +14,7 @@ const Navbar = () => {
   const { unreadCount } = useMessages();
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,18 +26,34 @@ const Navbar = () => {
 
   return (
     <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      {isMobileMenuOpen && (
+        <div className="nav-mobile-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
       <div className="navbar-inner container">
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link to="/" className="nav-logo">
-            <img 
-              src="/src/images/kudeja logo.png" 
-              alt="Kudeja Trading PLC" 
-              className="nav-logo-img" 
-            />
-          </Link>
-        </motion.div>
+        <div className="navbar-brand">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link to="/" className="nav-logo" onClick={() => setIsMobileMenuOpen(false)}>
+              <img 
+                src="/src/images/kudeja logo.png" 
+                alt="Kudeja Trading PLC" 
+                className="nav-logo-img" 
+              />
+            </Link>
+          </motion.div>
 
-        <nav className="nav-links-wrapper">
+          {/* Hamburger Menu Toggle */}
+          <button 
+            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation"
+          >
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+          </button>
+        </div>
+
+        <nav className={`nav-links-wrapper ${isMobileMenuOpen ? 'open' : ''}`}>
           <ul className="nav-links">
             <li>
               <NavLink to="/" end className="nav-link">

@@ -1,9 +1,15 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
 import './About.css';
 
 const About = () => {
   return (
     <div className="about-page">
+      <SEO 
+        title="About Us" 
+        description="Learn more about Kudeja Trading, your reliable partner in Ethiopia for electronics, computers, and general trading since 20XX."
+      />
       <div className="container">
         <h1 className="page-title">About Kudeja Trading</h1>
         <div className="about-content">

@@ -117,11 +117,38 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/health/ai', (req, res) => {
+    const key = process.env.GEMINI_API_KEY;
+    const hasKey = key && key !== 'your_gemini_api_key_here';
+    res.json({
+        geminiActive: hasKey,
+        keyFormat: hasKey ? (key.startsWith('AQ') ? 'New (AQ)' : 'Legacy (AIza)') : 'None',
+        botName: 'Kudeja AI Assistant'
+    });
+});
+
 async function start() {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
     console.log('✅ Database synced and altered');
+    
+    // Gemini AI Startup Check
+    const { getAIResponse } = require('./services/aiService');
+    const testKey = process.env.GEMINI_API_KEY;
+    if (testKey && testKey !== 'your_gemini_api_key_here') {
+      console.log('🤖 Gemini AI: Checking connectivity...');
+      getAIResponse('Hello', '')
+        .then(() => console.log('✅ Gemini AI: Connection Successful!'))
+        .catch(err => {
+            console.error('❌ Gemini AI: Connection Failed:', err.message);
+            if (err.message.includes('API_KEY_INVALID')) {
+                console.error('   -> Suggestion: Your API key appears invalid. Check your .env file.');
+            }
+        });
+    } else {
+      console.log('⚠️ Gemini AI: No valid API Key found. System will use Keyword matching.');
+    }
   } catch (error) {
     console.error('❌ Database startup error:', error.message);
   }

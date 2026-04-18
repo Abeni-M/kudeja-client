@@ -12,9 +12,33 @@ const LiveChatWidget = () => {
     const [message, setMessage] = useState('');
     const [chatHistory, setChatHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [botStatus, setBotStatus] = useState('Checking...');
     const { socket, unreadCount, fetchUnreadCount } = useMessages();
     const { user } = useAuth();
     const chatEndRef = useRef(null);
+
+    useEffect(() => {
+        // Check AI Health status on mount
+        const checkAI = async () => {
+            try {
+                const res = await fetch('/api/health/ai');
+                if (res.ok) {
+                    const data = await res.json();
+                    setBotStatus(data.geminiActive ? ' Online' : '🤖 Assistant Online');
+                } else {
+                    setBotStatus('🤖 Assistant Online');
+                }
+            } catch (err) {
+                setBotStatus('🤖 Assistant Online');
+            }
+        };
+        checkAI();
+    }, []);
+
+    useEffect(() => {
+        console.log("🚀 LiveChat Initialized: Waiting for input...");
+    }, []);
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -88,11 +112,14 @@ const LiveChatWidget = () => {
                 createdAt: new Date().toISOString()
             }]);
 
-            // 2. Call AI Chat (this handles saving and bot response on server)
+            // 2. Show Typing Indicator
+            setIsTyping(true);
+
+            // 3. Call AI Chat
             const res = await sendAIChat({ message: msgContent });
 
             if (res.data?.success) {
-                // 3. Emit real-time message to socket for Admin
+                // 4. Emit real-time message to socket for Admin
                 if (socket) {
                     socket.emit('chat_message', {
                         message: msgContent,
@@ -102,17 +129,19 @@ const LiveChatWidget = () => {
                     });
                 }
 
-                // 4. Update with AI reply from server
+                // 5. Update with AI reply from server
                 if (res.data.reply) {
                     setChatHistory(prev => [...prev, {
                         content: res.data.reply,
-                        senderRole: 'admin', // AI behaves like staff
+                        senderRole: 'admin',
                         createdAt: new Date().toISOString()
                     }]);
                 }
             }
         } catch (err) {
             toast.error('Failed to send message');
+        } finally {
+            setIsTyping(false);
         }
     };
 
@@ -146,7 +175,7 @@ const LiveChatWidget = () => {
         });
     };
 
-    if (user?.role === 'admin') return null; // Admin has their own dashboard
+    // No longer hiding for admins so they can test the AI features
 
     return (
         <div className="live-chat-container">
@@ -162,13 +191,8 @@ const LiveChatWidget = () => {
                             <div className="chat-header-info">
                                 <div className="online-indicator"></div>
                                 <div className='kud'>
-                                    <img 
-                                      src="/src/images/kudeja logo.png" 
-                                      alt="Kudeja Logo" 
-                                      className="chat-header-logo" 
-                                      style={{ height: '30px', width: 'auto', marginBottom: '2px' }}
-                                    />
-                                    <p>Online </p>
+                                    <h3 style={{ margin: 0, fontSize: '1rem' }}>Support Chat</h3>
+                                    <p style={{ color: '#4ade80', fontSize: '0.75rem', fontWeight: 600 }}>{botStatus}</p>
                                 </div>
                             </div>
                             <button className="close-btn" onClick={() => setIsOpen(false)}>
@@ -205,6 +229,15 @@ const LiveChatWidget = () => {
                                             </div>
                                         </div>
                                     ))}
+                                    {isTyping && (
+                                        <div className="message-bubble admin typing">
+                                            <div className="bubble-content">
+                                                <div className="typing-dots">
+                                                    <span></span><span></span><span></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div ref={chatEndRef} />
                                 </div>
                             )}

@@ -91,7 +91,24 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    
+    // Handle Sequelize specific errors
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      const field = error.errors[0].path;
+      return res.status(400).json({ 
+        success: false, 
+        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use another one.` 
+      });
+    }
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        success: false, 
+        message: error.errors[0].message 
+      });
+    }
+
+    return res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
 

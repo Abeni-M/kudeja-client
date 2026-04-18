@@ -1,41 +1,48 @@
-/**
- * aiService.js
- * Handles AI responses for live chat and escalation logic.
- */
-
-// Placeholder for an actual LLM integration (e.g., Gemini or OpenAI)
-// To use a real AI, you would install @google/generative-ai and replace the simulate logic.
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const KUDEJA_KNOWLEDGE = `
-You are the Kudeja Trading AI Assistant. 
-Kudeja Trading is a general trading company in Ethiopia with over 5 years of experience.
-Services:
-1. Computer and Accessories: High-performance computers and peripherals.
-2. Printer and Copy Machine: Reliable printing and copying solutions.
-3. Security Cameras: Advanced surveillance systems.
-4. Special Event Organizer: Organizing memorable events.
-Location: Addis Ababa, Ethiopia.
-Response Tone: Professional, friendly, and helpful.
-Instruction: If a user asks for a human, admin, agent, or has a complex issue (like specific order problems, 
-refunds, or payments), respond that you are referring them to a human agent.
+You are the Kudeja Trading AI Assistant, a helpful and knowledgeable expert on Ethiopian technology services.
+Company Profile:
+- Name: Kudeja Trading PLC
+- Market: Ethiopia (Addis Ababa)
+- Experience: 5+ years of premium electronics and service delivery.
+- Values: Quality, reliability, and customer satisfaction.
+
+Your Personality:
+- Professional, warm, and highly responsive.
+- You speak fluently in both English and Amharic, but you MUST ONLY reply in the single language the user typed in.
+- You provide detailed specs when asked.
+- You never say "I don't know" - instead, offer to check with a human agent.
+
+Services We Provide:
+1. Computers & Laptops: High-end brands (HP, Dell, Apple, Lenovo).
+2. Printing Solutions: Industrial and home printers/copiers.
+3. Security: CCTV and surveillance systems for homes and businesses.
+4. Events: Professional event organization and tech setup.
+
+Context for current inventory:
+{{productContext}}
+
+Instructions:
+- When a client asks about a specific product or you recommend a product, provide some key specifications first.
+- After the specifications, ALWAYS include a direct link to the product using exactly this format: http://localhost:5173/product/<id> (replace <id> with the actual product ID from the inventory context). This link will be converted into a button automatically.
+- If a user mentions "responsiveness" or "speed", emphasize that we have local support available 24/7.
+- Use emojis to make the conversation friendly.
 `;
 
 /**
- * Generates an AI response and decides if escalation is needed.
- * @param {string} userMessage - The message from the user.
- * @param {string} productContext - Informational string about current stock.
- * @returns {Promise<{ reply: string, escalate: boolean }>}
+ * Generates an AI response using Gemini if available, otherwise falls back to keyword matching.
  */
 const getAIResponse = async (userMessage, productContext = "") => {
+    const geminiKey = process.env.GEMINI_API_KEY;
     const msg = userMessage.toLowerCase();
-
-    // Check if message contains Amharic/Ethiopic characters (Unicode range U+1200 to U+137F)
     const isAmharic = /[\u1200-\u137F]/.test(userMessage);
 
-    // 1. Detection for Handoff / Human Escalation
+    // 1. Detection for Handoff / Human Escalation (Always check first)
     const needsAgent = msg.includes('agent') || msg.includes('admin') || msg.includes('human') ||
         msg.includes('speak to') || msg.includes('እባክዎን ሰው') || msg.includes('አስተዳዳሪ') ||
-        msg.includes('contact') || msg.includes('call') || msg.includes('phone');
+        msg.includes('contact') || msg.includes('call') || msg.includes('phone') ||
+        msg.includes('ስልክ');
 
     if (needsAgent) {
         return {
@@ -46,51 +53,66 @@ const getAIResponse = async (userMessage, productContext = "") => {
         };
     }
 
-    // 2. Greeting / Context
-    const greeting = isAmharic ? "ሰላም!" : "Hello!";
+    // 2. Try Gemini if API key is present
+    if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+        try {
+            console.log(`🤖 Gemini Attempt: Key format: ${geminiKey.substring(0, 3)}... Target: gemini-2.5-flash`);
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+            const languageInstruction = isAmharic ? "IMPORTANT: The user asked in Amharic. You MUST reply ONLY in Amharic. Do not use English." : "IMPORTANT: The user asked in English. You MUST reply ONLY in English. Do not use Amharic.";
+
+            const prompt = KUDEJA_KNOWLEDGE.replace('{{productContext}}', productContext) + 
+                          `\n\n${languageInstruction}\n\nUser Question: ${userMessage}`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            console.log('✅ Gemini Success: Response generated.');
+            return {
+                reply: text,
+                escalate: false
+            };
+        } catch (error) {
+            console.error('❌ Gemini Detail Error:', {
+                message: error.message,
+                code: error.code,
+                status: error.status,
+                stack: error.stack?.split('\n')[0]
+            });
+            // Fallthrough to keyword matching
+        }
+    }
+
+    // 3. Fallback Keyword Matching (Enhanced)
     const KUDEJA_IDENT = isAmharic 
-      ? "\nቡድናችን ኩዴጃ ትሬዲንግ (Kudeja Trading) የተለያዩ የኮምፒውተር እቃዎች፣ ፕሪንተሮች እና የደህንነት ካሜራዎችን በማቅረብ ላይ ይገኛል::" 
-      : "\nI am the Kudeja Trading Assistant. We specialize in high-quality computers, printers, and security solutions in Ethiopia.";
+      ? "ኩዴጃ ትሬዲንግ (Kudeja Trading) የተለያዩ የኮምፒውተር እቃዎች፣ ፕሪንተሮች እና የደህንነት ካሜራዎችን በማቅረብ ላይ ይገኛል::" 
+      : "I am the Kudeja Trading Assistant. We specialize in high-quality computers, printers, and security solutions in Ethiopia.";
 
-    // 3. Category Assistance
-    const categories = [
-        { en: 'laptop', am: 'ላፕቶፕ', sub: 'HP, Dell, Apple, Lenovo' },
-        { en: 'computer', am: 'ኮምፒውተር', sub: 'Desktop, Monitors' },
-        { en: 'printer', am: 'ፕሪንተር', sub: 'Canon, HP, Epson' },
-        { en: 'camera', am: 'ካሜራ', sub: 'Hikvision, Dahua, CCTV' },
-        { en: 'cctv', am: 'ሲሲቲቪ', sub: 'Surveillance systems' }
-    ];
-
-    const matchedCategory = categories.find(cat => msg.includes(cat.en) || msg.includes(cat.am));
-
-    if (matchedCategory && !msg.includes('brand') && !msg.includes('model')) {
+    // Simple matching for greetings
+    if (msg.includes('help') || msg.includes('hi') || msg.includes('hello') || msg.includes('ሰላም') || msg.includes('እርዳታ')) {
         return {
             reply: isAmharic
-                ? `አዎ፣ እኛ በርካታ ${matchedCategory.am} እቃዎች አሉን:: በተለየ የምንመክርዎት ታዋቂ ብራንዶች: ${matchedCategory.sub} ናቸው:: የትኛውን ብራንድ ወይም የተለየ ሞዴል እንደሚፈልጉ ቢነግሩኝ ዝርዝሩን አረጋግጥልዎታለሁ::`
-                : `Yes, we have a great selection of ${matchedCategory.en}s! We stock major brands like ${matchedCategory.sub}. Is there a specific brand or model you're interested in? I'd be happy to check the details for you.`,
+                ? `ሰላም! ${KUDEJA_IDENT} እንዴት ልረዳዎት እችላለሁ? ስለ ኮምፒውተሮች፣ ፕሪንተሮች ወይም የደህንነት ካሜራዎች መጠየቅ ይችላሉ። እንዲሁም ለሌሉ እቃዎች ልዩ ትዕዛዝ መስጠት ይችላሉ።`
+                : `Hello!, hey!, hi! ${KUDEJA_IDENT} How can I assist you today? I can check our stock. We also accept special pre-orders for items not currently in stock!`,
             escalate: false
         };
     }
 
-    // Specific Item/Brand Check
+    // Product search fallback
     if (productContext && productContext.trim().length > 0) {
-        // Normalize and extract meaningful query terms (min 3 chars)
         const queryTerms = msg.split(/[ ,.!?]+/).filter(word => word.length >= 2);
-
         const allProductLines = productContext.split('\n');
 
-        // Find matches and rank them by how many terms they contain
         const scoredMatches = allProductLines.map(line => {
             const lowerLine = line.toLowerCase();
             const score = queryTerms.reduce((sum, term) => sum + (lowerLine.includes(term) ? 1 : 0), 0);
             return { line, score };
-        }).filter(item => item.score > 0)
-            .sort((a, b) => b.score - a.score); // Highest score (most matches) first
+        }).filter(item => item.score > 0).sort((a, b) => b.score - a.score);
 
         if (scoredMatches.length > 0) {
-            const topScore = scoredMatches[0].score;
-            const bestMatches = scoredMatches.filter(m => m.score === topScore || m.score >= 2).map(m => {
-                // Parse our pipe-delimited context
+            const bestMatches = scoredMatches.slice(0, 2).map(m => {
                 const parts = m.line.split(' | ').reduce((acc, part) => {
                     const [key, val] = part.split(': ');
                     acc[key.trim()] = val?.trim();
@@ -99,17 +121,13 @@ const getAIResponse = async (userMessage, productContext = "") => {
 
                 const name = parts.NAME;
                 const price = parts.PRICE;
-                const stock = parts.STOCK;
                 const specs = parts.SPECS || 'Not listed';
                 const id = parts.ID;
 
-                const statusLabel = stock === 'AVAILABLE' ? (isAmharic ? '✅ አሁን ይገኛል' : '✅ AVAILABLE') : (isAmharic ? '❌ የለም' : '❌ OUT OF STOCK');
-
                 if (isAmharic) {
-                    return `✨ **${name}**\n💰 ዋጋ: **${price} ETB**\n📦 ሁኔታ: ${statusLabel}\n⚙️ ጠቅላላ መግለጫ: ${specs}\n🔗 ዝርዝር ለመመልከት: http://localhost:5173/product/${id}`;
+                    return `✨ **${name}**\n💰 ዋጋ: **${price} ETB**\n⚙️ መግለጫ: ${specs}\n🔗 ዝርዝር: http://localhost:5173/product/${id}`;
                 }
-
-                return `✨ **${name}**\n💰 Price: **${price} ETB**\n📦 Status: ${statusLabel}\n⚙️ Specs: ${specs}\n🔗 View Details: http://localhost:5173/product/${id}`;
+                return `✨ **${name}**\n💰 Price: **${price} ETB**\n⚙️ Specs: ${specs}\n🔗 Details: http://localhost:5173/product/${id}`;
             });
 
             return {
@@ -118,27 +136,9 @@ const getAIResponse = async (userMessage, productContext = "") => {
                     : `Here are our top recommendations for you:\n\n${bestMatches.join('\n\n')}\n\nWould you like help with ordering?`,
                 escalate: false
             };
-        } else if (queryTerms.some(t => ['hp', 'dell', 'apple', 'canon', 'lenovo', 'asus', 'laptop', 'printer', 'camera', 'hikvision'].includes(t))) {
-            return {
-                reply: isAmharic
-                    ? "ለጊዜው ባዘዙት ብራንድ ወይም ሞዴል ክምችት የለንም። ነገር ግን በልዩ ትዕዛዝ ልናስመጣሎት እንችላለን! እባክዎን በስልክ ቁጥር 0911... ወይም በ አድራሻችን በመምጣት ያነጋግሩን።"
-                    : "I've checked our current inventory, and that specific model is currently out of stock. However, we can often pre-order specific items for you! Please contact us directly at +251 911... or visit our office to place a manual order.",
-                escalate: false
-            };
         }
     }
 
-    // Generic Consult
-    if (msg.includes('help') || msg.includes('hi') || msg.includes('hello') || msg.includes('ሰላም') || msg.includes('እርዳታ')) {
-        return {
-            reply: isAmharic
-                ? `ሰላም! ${KUDEJA_IDENT} እንዴት ልረዳዎት እችላለሁ? ስለ ኮምፒውተሮች፣ ፕሪንተሮች ወይም የደህንነት ካሜራዎች መጠየቅ ይችላሉ። እንዲሁም ለሌሉ እቃዎች ልዩ ትዕዛዝ መስጠት ይችላሉ።`
-                : `Hello! ${KUDEJA_IDENT} How can I assist you today? I can check our stock for Laptops, Printers, or Security Cameras. We also accept special pre-orders for items not currently in stock!`,
-            escalate: false
-        };
-    }
-
-    // 141
     return {
         reply: isAmharic
             ? "ይቅርታ፣ ጥያቄዎ በደንብ አልገባኝም:: እባክዎን የሚፈልጉትን ብራንድ፣ እቃ ወይም አገልግሎት ቢጥቀሱልኝ የተሻለ መረጃ ልሰጥዎት እችላለሁ::"

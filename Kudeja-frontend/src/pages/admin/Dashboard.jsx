@@ -30,10 +30,10 @@ const Dashboard = () => {
       setLoading(true);
       const res = await getDashboardStats();
       if (res.data?.success) {
-        const { users, products, orders, revenue, growth, notifications: fetchedNotifs, activityByDay, ordersByStatus, topCategories } = res.data.data;
+        const { users, products, orders, revenue, growth, notifications: fetchedNotifs, activityByDay, ordersByStatus, topCategories, lowStockProducts } = res.data.data;
         // Set only the 5 overview metrics in stats
         setStats({ users, products, orders, revenue, growth });
-        setChartData({ activityByDay, ordersByStatus, topCategories });
+        setChartData({ activityByDay, ordersByStatus, topCategories, lowStockProducts });
         if (fetchedNotifs) setNotifications(fetchedNotifs);
       }
     } catch (err) {

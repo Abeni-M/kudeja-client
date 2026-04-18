@@ -231,12 +231,11 @@ function Home() {
         </motion.div>
 
         <motion.div 
-          className="products-grid"
+          className="home-products-grid"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
         >
           {featured.map((product) => (
             <motion.div key={product.id || product._id || product.name} variants={itemVariants}>
@@ -248,9 +247,9 @@ function Home() {
 
         </div>
 
-        {/* Vertical Ads Sidebar */}
+        {/* Vertical Ads Sidebar - Desktop Only */}
         {sidebarAds && sidebarAds.length > 0 && (
-          <aside className="home-sidebar-ads">
+          <aside className="home-sidebar-ads desktop-only">
             <h3 className="sidebar-ads-title">Sponsored Partners</h3>
             <div className="sidebar-ads-list">
               {sidebarAds.map((ad) => (
@@ -342,6 +341,18 @@ function Home() {
         </div>,
         document.body
       )}
+
+      {/* Mobile-Only Sponsored Section */}
+      <section className="mobile-sponsored-section">
+        <div className="section-header">
+          <h2 className="section-title">Sponsored Partners</h2>
+        </div>
+        <div className="mobile-ads-slider">
+           {sidebarAds.map((ad) => (
+             <SidebarAdItem key={ad.id} ad={ad} onClick={() => setSelectedAd(ad)} />
+           ))}
+        </div>
+      </section>
 
       {/* Stats Section */}
       <section className="stats-section-container">

@@ -306,7 +306,7 @@ const ManageAds = () => {
                     <td style={{ fontWeight: 600 }}>{ad.companyName + ' - ' + ad.description}</td>
                     <td>
                       <span className={`admin-pill ${ad.placement === 'banner' ? 'admin-pill-warning' : 'admin-pill-secondary'}`}>
-                        {ad.placement === 'banner' ? '⭐ Premium Banner' : 'Sidebar'}
+                        {ad.placement === 'banner' ? '⭐ Premium' : 'Sidebar'}
                       </span>
                     </td>
                     <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--admin-muted)' }}>
@@ -482,10 +482,10 @@ const ManageAds = () => {
                     type="button"
                     className="admin-btn admin-btn-outline"
                     onClick={() => {
-                        // We'll repurpose the ImagePicker for adding to the array
-                        setShowImagePicker(true);
-                        // Temporarily flag that we are picking for the SLIDESHOW
-                        window.__pickingForSlideshow = true;
+                      // We'll repurpose the ImagePicker for adding to the array
+                      setShowImagePicker(true);
+                      // Temporarily flag that we are picking for the SLIDESHOW
+                      window.__pickingForSlideshow = true;
                     }}
                     style={{ width: '100%', gap: '0.5rem' }}
                   >
@@ -549,8 +549,8 @@ const ManageAds = () => {
             }
           }}
           onClose={() => {
-              setShowImagePicker(false);
-              window.__pickingForSlideshow = false;
+            setShowImagePicker(false);
+            window.__pickingForSlideshow = false;
           }}
         />
       )}
