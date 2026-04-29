@@ -83,6 +83,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const adRoutes = require('./routes/adRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -93,6 +94,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Root route
 app.get('/', (req, res) => {

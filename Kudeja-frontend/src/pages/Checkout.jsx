@@ -1,14 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { createOrder } from '../services/orderService';
+import { initializePayment } from '../services/paymentService';
 import { formatPrice } from '../utils/formatters';
+import PaymentMethods from '../components/PaymentMethods';
 import './Checkout.css';
 
 function Checkout() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
   const [submitting, setSubmitting] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState('');
 
   const [shipping, setShipping] = useState({
@@ -53,18 +58,46 @@ function Checkout() {
 
     try {
       setSubmitting(true);
-      await createOrder({
+      setLoadingStep('Creating your order...');
+      const orderResponse = await createOrder({
         items: itemsPayload,
         total: cartTotal,
         shippingAddress: shipping,
         paymentMethod,
       });
+
+      const orderId = orderResponse.data.data.id;
+
+      // 3. Initialize Payment (Real logic simulation)
+      const redirectMethods = ['Telebirr', 'CBE Birr', 'Visa', 'Mastercard', 'PayPal', 'CBE Bank', 'Awash Bank', 'Abyssinia'];
+      if (redirectMethods.includes(paymentMethod)) {
+        setLoadingStep(`Connecting to ${paymentMethod} Secure Gateway...`);
+        const paymentResponse = await initializePayment({
+          amount: cartTotal,
+          tx_ref: orderId,
+          email: user?.email || 'customer@kudeja.com',
+          first_name: user?.name?.split(' ')[0] || shipping.fullName.split(' ')[0],
+          last_name: user?.name?.split(' ')[1] || shipping.fullName.split(' ')[1] || 'Customer',
+          payment_method: paymentMethod
+        });
+
+        if (paymentResponse.data.success) {
+          // REDIRECT TO CHAPA CHECKOUT
+          window.location.href = paymentResponse.data.data.checkout_url;
+          return;
+        }
+      }
+
       clearCart();
       navigate('/orders');
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to place order');
     } finally {
-      setSubmitting(false);
+      // Keep submitting true if we are redirecting, otherwise hide overlay
+      const isRedirectMethod = ['Telebirr', 'CBE Birr', 'Visa', 'Mastercard', 'PayPal', 'CBE Bank', 'Awash Bank', 'Abyssinia'].includes(paymentMethod);
+      if (!isRedirectMethod) {
+         setSubmitting(false);
+      }
     }
   };
 
@@ -128,28 +161,10 @@ function Checkout() {
             </div>
 
             <div className="form-row">
-              <label>Payment Method</label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                required
-                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-              >
-                <option value="" disabled>Select your payment method</option>
-                <optgroup label="Mobile Money">
-                  <option value="CBE Birr">CBE Birr</option>
-                  <option value="Telebirr">Telebirr</option>
-                </optgroup>
-                <optgroup label="Local Banks">
-                  <option value="Commercial Bank of Ethiopia (CBE)">Commercial Bank of Ethiopia (CBE)</option>
-                  <option value="Awash Bank">Awash Bank</option>
-                  <option value="Bank of Abyssinia">Bank of Abyssinia</option>
-                </optgroup>
-                <optgroup label="International">
-                  <option value="MasterCard">MasterCard</option>
-                  <option value="Visa">Visa</option>
-                </optgroup>
-              </select>
+              <PaymentMethods 
+                selectedMethod={paymentMethod} 
+                onSelect={setPaymentMethod} 
+              />
             </div>
 
             <div className="checkout-actions">
@@ -199,6 +214,22 @@ function Checkout() {
           </div>
         </aside>
       </div>
+
+      {submitting && (
+        <div className="payment-overlay">
+          <div className="payment-modal">
+            <div className="spinner"></div>
+            <h2>Securely Processing</h2>
+            <p>{loadingStep || 'Please do not close this window...'}</p>
+            <div className="secure-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>SSL Secured Payment</span>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

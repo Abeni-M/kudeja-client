@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { getOrders, confirmOrderReceipt } from '../services/orderService';
+import { verifyPayment } from '../services/paymentService';
 import { LuStar } from 'react-icons/lu';
 import { formatPrice } from '../utils/formatters';
 import toast from 'react-hot-toast';
@@ -93,7 +94,41 @@ function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const intervalRef = useRef(null);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const trxRef = searchParams.get('trx_ref');
+    if (trxRef) {
+      // First check if we already have this order as paid
+      const isAlreadyPaid = orders.find(o => String(o.id) === trxRef && o.status === 'paid');
+      if (isAlreadyPaid) {
+        toast.success('Payment already confirmed!');
+        // Clear param
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
+      setLoading(true);
+      verifyPayment(trxRef)
+        .then(() => {
+          toast.success('Payment verified successfully!');
+          load(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch(() => {
+          toast.error('Payment verification failed. Please contact support.');
+          setLoading(false);
+        });
+    }
+  }, [searchParams, orders]);
+
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message, { duration: 5000 });
+      // Clear state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const load = async (showLoader = false) => {
     try {

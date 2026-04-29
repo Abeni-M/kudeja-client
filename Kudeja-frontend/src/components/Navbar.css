@@ -6,7 +6,7 @@
   padding: 0 1rem; /* Decreased top border/padding to stick to the top */
   background: var(--bg-navbar);
   border-bottom: 1px solid var(--border-color);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(2px);
   box-shadow: var(--navbar-shadow);
   transition: all var(--transition);
 }

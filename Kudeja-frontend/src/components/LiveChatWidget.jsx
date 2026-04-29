@@ -27,10 +27,10 @@ const LiveChatWidget = () => {
                     const data = await res.json();
                     setBotStatus(data.geminiActive ? ' Online' : '🤖 Assistant Online');
                 } else {
-                    setBotStatus('🤖 Assistant Online');
+                    setBotStatus(' Online');
                 }
             } catch (err) {
-                setBotStatus('🤖 Assistant Online');
+                setBotStatus(' Online');
             }
         };
         checkAI();
