@@ -3,7 +3,7 @@
   margin-top: 4rem;
   background-color: #0c0f14;
   color: #ffffff;
-  padding-top: 1rem;
+  padding-top: 0rem;
    backdrop-filter: blur(30px);
 }
 
@@ -11,7 +11,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 2.5rem;
-  padding: 0 2rem 2.5rem 2rem;
+  padding: 4rem 2rem 2.5rem 2rem;
 }
 
 .footer-logo {
@@ -73,12 +73,12 @@
   padding: 0;
   margin: 0;
   font-size: 0.9rem;
-  hover: #f1430e;
 }
 
 .footer-links li + li,
 .footer-contact li + li {
-  margin-top: 0.4rem;
+  margin-top: 0.9rem;
+  padding: auto;
 }
 
 .footer-links a {

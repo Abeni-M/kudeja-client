@@ -63,8 +63,8 @@ function Footer() {
             <li>Mobile: +251 911 430 926</li>
             <li>Tel: +251 115 586 557</li>
             <li>P.O.Box: 1516/1250 </li>
-            <li>Address: Bole Road, Dembel city center </li>
-            <li> Addis Ababa, Ethiopia</li>
+            <li>Address: Bole Road, Dembel city center, Addis Ababa, Ethiopia </li>
+            <li> </li>
           </ul>
         </div>
       </div>
