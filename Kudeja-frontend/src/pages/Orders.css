@@ -1,0 +1,229 @@
+.orders-page {
+  padding: 4rem 0;
+  background: var(--bg-body);
+  min-height: 60vh;
+  transition: background-color var(--transition);
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.orders-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  border-radius: 1.5rem;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.orders-state--error {
+  border-color: #fca5a5;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.orders-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.order-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.order-title {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.order-meta {
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.order-total {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.order-items {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-main);
+}
+
+.order-item-name {
+  font-weight: 600;
+}
+
+.order-item-qty {
+  color: var(--text-muted);
+}
+
+.order-more {
+  color: #667eea;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.orders-state a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.orders-state a:hover {
+  text-decoration: underline;
+}
+
+/* ─── Feedback Form ─── */
+.order-feedback-form {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: var(--bg-body);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition);
+}
+
+.order-feedback-form h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-main);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.order-feedback-form p {
+  margin: 0 0 1rem 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.feedback-stars {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #d1d5db;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}
+
+.order-feedback-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 1rem;
+  background: var(--bg-card);
+  color: var(--text-main);
+  box-sizing: border-box;
+  transition: all var(--transition);
+}
+
+.order-feedback-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.btn-confirm-receipt {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-confirm-receipt:hover:not(:disabled) {
+  background: #1f2937;
+}
+
+.btn-confirm-receipt:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Feedback Display ─── */
+.order-feedback-display {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  transition: all var(--transition);
+}
+
+.feedback-display-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-confirmed-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #047857;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.feedback-display-stars {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.feedback-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-style: italic;
+}

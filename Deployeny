@@ -1,0 +1,54 @@
+# Phase 5: Internet Deployment (Going Live)
+
+This plan outlines the complete process of taking your Kudeja Trading platform from your local computer (`localhost`) and publishing it to the live internet so that anyone in Ethiopia and beyond can access it.
+
+## 1. What You Need Before We Start
+
+Before we begin the technical setup, you will need a few things ready:
+
+> [!IMPORTANT]
+> **A Domain Name**: You need to decide on your web address (e.g., `kudeja.com` or `kudejatrading.et`). I can help you set this up on a provider like **Namecheap** or **Google Domains**.
+> 
+> **A Hosting Account**: We need "Cloud" space. For your specific tech stack (React + Node + Postgres), I recommend **Render.com** or **Railway.app**. They are very reliable and offer free/cheap tiers to start.
+> 
+> **Email App Password**: Ensure you have that 16-character Google App Password ready for the Email Service we built in Phase 2.
+
+---
+
+## 2. The Deployment Process (Steps)
+
+The deployment happens in three main stages:
+
+### A. The Database (The Brain)
+- Currently, your data is stored on your PC. We will move this to a **Cloud Database** (like Neon.tech or Render Postgres).
+- We will "Export" your local data and "Import" it into the cloud so you don't lose any products or categories.
+
+### B. The Backend (The Heart)
+- We will upload your `kudeja-backend` folder to a server.
+- We will configure your **Environment Variables** (`.env`) on the server so the password and database links stay hidden from the public.
+- The server will give us a "Production URL" (e.g., `api.kudeja.com`).
+
+### C. The Frontend (The Face)
+- We will run a command to "Build" your React app. This compresses the code into a small, fast package.
+- We will upload this to a host like **Vercel** or **Render**.
+- Finally, we will point your **Domain Name** (`kudeja.com`) to this file so users see your beautiful design when they type the URL.
+
+---
+
+## 3. Security & Production Checklist
+
+Before the site goes live, we must ensure:
+* [ ] **SSL (HTTPS)**: Ensuring the "Green Lock" appears in the browser so customer data is encrypted.
+* [ ] **CORS Settings**: Restricting your backend so only *your* frontend can talk to it (protects against hackers).
+* [ ] **Error Logging**: Setting up a tool to tell us if the server crashes while you're sleeping.
+
+---
+
+## 4. Open Questions for You
+
+> [!WARNING]
+> **Budget**: Most cloud services start for free, but for a professional business with many images, you might need a small monthly budget (approx. $7-$20 USD/month total). Is this within your expectations?
+>
+> **Global vs Local**: Do you want your site to be hosted on servers physically close to Ethiopia for speed, or is a global provider (USA/Europe) okay?
+
+Does this process make sense? If you are ready, our first step will be choosing the Hosting Provider!
