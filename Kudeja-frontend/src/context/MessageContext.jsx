@@ -61,7 +61,7 @@ export const MessageProvider = ({ children }) => {
 
         const socketUrl = import.meta.env.MODE === 'development'
             ? window.location.origin   // goes through Vite proxy → backend
-            : 'http://localhost:5000'; // production: connect directly
+            : (import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : 'http://localhost:5000')); // production: use env var
 
         const s = io(socketUrl, {
             withCredentials: true,
