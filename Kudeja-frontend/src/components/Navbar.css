@@ -3,18 +3,40 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  padding: 0 1rem; /* Decreased top border/padding to stick to the top */
+  padding: 0 1rem;
   background: var(--bg-navbar);
   border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(2px);
   box-shadow: var(--navbar-shadow);
-  transition: all var(--transition);
+  transition:
+    padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    backdrop-filter 0.4s ease;
+  will-change: padding, background;
 }
 
 .navbar.scrolled {
   padding: 0 2rem;
-  background: rgba(var(--bg-navbar-rgb), 0.95);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.06),
+    0 8px 32px rgba(0,0,0,0.08);
+}
+
+[data-theme='dark'] .navbar.scrolled {
+  background: rgba(17, 24, 39, 0.88);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06),
+    0 8px 32px rgba(0,0,0,0.35);
+}
+
+/* Logo shrinks on scroll */
+.navbar.scrolled .nav-logo-img {
+  height: 120px;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navbar-inner {
@@ -101,12 +123,33 @@
 
 .nav-link {
   position: relative;
-  font-size: 0.85rem; /* Decreased size */
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
   padding-bottom: 0.15rem;
   transition: color var(--transition);
+  letter-spacing: 0.01em;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 999px;
+  transition:
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    left  0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+  left: 0;
 }
 
 .nav-link:hover {
@@ -125,16 +168,7 @@
   color: var(--text-main);
 }
 
-.nav-link.active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -0.25rem;
-  width: 100%;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
-}
+/* Remove old static active underline – now handled by ::after */
 
 .nav-actions {
   display: flex;
@@ -222,9 +256,13 @@
 
 .theme-toggle-btn:hover {
   background: var(--bg-body);
-  transform: translateY(-2px);
+  transform: rotate(20deg) scale(1.1);
   border-color: var(--primary);
   box-shadow: var(--shadow);
+}
+
+.theme-toggle-btn:active {
+  transform: rotate(180deg) scale(0.9);
 }
 
 .theme-toggle-btn svg {
@@ -275,10 +313,20 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.04),
+    0 16px 48px rgba(0,0,0,0.16);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: dropdownSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownSlideIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .nav-dropdown-header {

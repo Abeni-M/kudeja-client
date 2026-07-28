@@ -1,0 +1,785 @@
+/* ============================================================
+   scroll-animations.css
+   Claude UI–inspired scroll, hover & micro-interaction layer
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. SCROLL-REVEAL KEYFRAMES
+   ---------------------------------------------------------- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideLeft {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeSlideRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleReveal {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(209, 27, 27, 0.18); }
+  50%       { box-shadow: 0 0 0 10px rgba(209, 27, 27, 0); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes ripple {
+  from { transform: scale(0); opacity: 0.6; }
+  to   { transform: scale(4); opacity: 0; }
+}
+
+@keyframes borderPulse {
+  0%, 100% { border-color: var(--border-color); }
+  50%       { border-color: var(--primary); }
+}
+
+/* ----------------------------------------------------------
+   2. SCROLL-REVEAL UTILITY CLASSES
+   (Applied via JS IntersectionObserver in main.jsx / App.jsx,
+    OR trigger manually with .is-visible class)
+   ---------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.93);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delays */
+.delay-1 { transition-delay: 0.08s !important; }
+.delay-2 { transition-delay: 0.16s !important; }
+.delay-3 { transition-delay: 0.24s !important; }
+.delay-4 { transition-delay: 0.32s !important; }
+.delay-5 { transition-delay: 0.40s !important; }
+.delay-6 { transition-delay: 0.48s !important; }
+
+/* ----------------------------------------------------------
+   3. NAVBAR – SCROLL SHRINK & GLASS EFFECT (override)
+   ---------------------------------------------------------- */
+.navbar {
+  transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.4s ease,
+              box-shadow 0.4s ease,
+              backdrop-filter 0.4s ease !important;
+  will-change: padding, background;
+}
+
+.navbar.scrolled {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06),
+              0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme='dark'] .navbar.scrolled {
+  background: rgba(17, 24, 39, 0.88) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06),
+              0 8px 32px rgba(0,0,0,0.35) !important;
+}
+
+/* Logo shrink on scroll */
+.navbar.scrolled .nav-logo-img {
+  height: 120px !important;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ----------------------------------------------------------
+   4. NAV LINKS – PREMIUM HOVER WITH UNDERLINE SLIDE
+   ---------------------------------------------------------- */
+.nav-link {
+  position: relative;
+  letter-spacing: 0.01em;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 999px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              left  0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Nav CTA ripple effect */
+.nav-cta {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-cta:hover::before {
+  transform: scaleX(1);
+}
+
+/* ----------------------------------------------------------
+   5. PRODUCT CARD – RICH 3D HOVER + SHINE SWEEP
+   ---------------------------------------------------------- */
+.product-card {
+  position: relative;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease !important;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  overflow: hidden;
+}
+
+/* Shine sweep overlay */
+.product-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  transition: background-position 0.6s ease;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+.product-card:hover::after {
+  background-position: 200% 0;
+}
+
+.product-card:hover {
+  transform: translateY(-8px) scale(1.015) !important;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.04),
+    0 8px 16px rgba(0,0,0,0.08),
+    0 24px 48px rgba(0,0,0,0.12),
+    0 0 0 1px rgba(209, 27, 27, 0.12) !important;
+  border-color: rgba(209, 27, 27, 0.2) !important;
+}
+
+/* Product image zoom */
+.product-image img {
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.07) !important;
+}
+
+/* Add to cart button – pulse */
+.btn-add-to-cart {
+  position: relative;
+  transition: background 0.25s ease,
+              transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease !important;
+}
+
+.btn-add-to-cart:hover {
+  transform: scale(1.12) !important;
+  box-shadow: 0 6px 20px rgba(102,126,234,0.4) !important;
+}
+
+.btn-add-to-cart:active {
+  transform: scale(0.96) !important;
+}
+
+/* View compact button */
+.btn-view-compact {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-view-compact:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* ----------------------------------------------------------
+   6. SERVICE CARDS – MAGNETIC-FEEL TILT + GLOW
+   ---------------------------------------------------------- */
+.service-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease,
+              border-color 0.3s ease,
+              background 0.3s ease !important;
+  transform-style: preserve-3d;
+}
+
+.service-card:hover {
+  transform: translateY(-10px) rotateX(2deg) !important;
+  box-shadow: 0 30px 60px rgba(209, 27, 27, 0.15),
+              0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.service-icon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease,
+              color 0.3s ease,
+              box-shadow 0.3s ease !important;
+}
+
+.service-card:hover .service-icon {
+  transform: rotate(12deg) scale(1.15) !important;
+  box-shadow: 0 8px 24px rgba(209, 27, 27, 0.3) !important;
+}
+
+/* ----------------------------------------------------------
+   7. STATS SECTION – COUNTER REVEAL
+   ---------------------------------------------------------- */
+.stat-item {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat-item:hover {
+  transform: translateY(-6px);
+}
+
+.stat-number {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover .stat-number {
+  transform: scale(1.05);
+}
+
+/* ----------------------------------------------------------
+   8. SIDEBAR AD CARDS – DEPTH HOVER
+   ---------------------------------------------------------- */
+.sidebar-ad-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease,
+              border-color 0.3s ease !important;
+}
+
+.sidebar-ad-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+  border-color: var(--primary) !important;
+}
+
+.sidebar-ad-image img {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar-ad-card:hover .sidebar-ad-image img {
+  transform: scale(1.08) !important;
+}
+
+/* ----------------------------------------------------------
+   9. HERO BUTTONS – SPRING BOUNCE
+   ---------------------------------------------------------- */
+.hero-section .btn-primary,
+.hero-section .btn-outline {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              background 0.25s ease !important;
+}
+
+.hero-section .btn-primary:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 32px rgba(209, 27, 27, 0.35) !important;
+}
+
+.hero-section .btn-outline:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+/* Ripple on click */
+.btn-ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  width: 8px;
+  height: 8px;
+  animation: ripple 0.6s linear forwards;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* ----------------------------------------------------------
+   10. FOOTER LINKS – SLIDE REVEAL
+   ---------------------------------------------------------- */
+.footer-links a {
+  position: relative;
+  display: inline-block;
+  transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.footer-links a::before {
+  content: '→';
+  position: absolute;
+  left: -1.2em;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  font-size: 0.8em;
+  transform: translateX(-4px);
+}
+
+.footer-links a:hover {
+  color: #fff !important;
+  transform: translateX(6px);
+}
+
+.footer-links a:hover::before {
+  opacity: 0.6;
+  transform: translateX(0);
+}
+
+/* Social icons – spring */
+.social-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease,
+              color 0.3s ease,
+              box-shadow 0.3s ease !important;
+}
+
+.social-icon:hover {
+  transform: translateY(-5px) scale(1.12) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* ----------------------------------------------------------
+   11. DROPDOWN MENU – GLASS + SLIDE
+   ---------------------------------------------------------- */
+.nav-dropdown-menu {
+  animation: fadeSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.04),
+    0 16px 48px rgba(0,0,0,0.16) !important;
+}
+
+.nav-dropdown-item {
+  transition: background 0.2s ease,
+              color 0.2s ease,
+              padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ----------------------------------------------------------
+   12. THEME TOGGLE – SPIN
+   ---------------------------------------------------------- */
+.theme-toggle-btn {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(20deg) scale(1.1) !important;
+}
+
+.theme-toggle-btn:active {
+  transform: rotate(180deg) scale(0.9) !important;
+}
+
+/* ----------------------------------------------------------
+   13. SCROLLBAR – PREMIUM THIN STYLE
+   ---------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 999px;
+  opacity: 0.7;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 1;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+/* ----------------------------------------------------------
+   14. SELECTION COLOR
+   ---------------------------------------------------------- */
+::selection {
+  background: rgba(209, 27, 27, 0.18);
+  color: var(--text-main);
+}
+
+/* ----------------------------------------------------------
+   15. FOCUS VISIBLE – ACCESSIBLE KEYBOARD RING
+   ---------------------------------------------------------- */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ----------------------------------------------------------
+   16. SMOOTH PAGE TRANSITIONS
+   ---------------------------------------------------------- */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* ----------------------------------------------------------
+   17. LOADING SHIMMER (for images / cards)
+   ---------------------------------------------------------- */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border-color) 25%,
+    rgba(209, 27, 27, 0.06) 50%,
+    var(--border-color) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--radius);
+}
+
+/* ----------------------------------------------------------
+   18. CARD GLASS HOVER VARIANT
+   ---------------------------------------------------------- */
+.card-glass {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background 0.3s ease, box-shadow 0.4s ease;
+}
+
+[data-theme='dark'] .card-glass {
+  background: rgba(31, 41, 55, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.card-glass:hover {
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme='dark'] .card-glass:hover {
+  background: rgba(31, 41, 55, 0.8);
+}
+
+/* ----------------------------------------------------------
+   19. SECTION HEADER ACCENT LINE
+   ---------------------------------------------------------- */
+.section-title-accent {
+  display: inline-block;
+  position: relative;
+}
+
+.section-title-accent::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, transparent 100%);
+  border-radius: 999px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-title-accent.is-visible::after {
+  transform: scaleX(1);
+}
+
+/* ----------------------------------------------------------
+   20. TOP BANNER AD – PULSE BORDER
+   ---------------------------------------------------------- */
+.top-banner-ad-inner {
+  animation: borderPulse 3s ease-in-out infinite;
+}
+
+.top-banner-ad-container:hover .top-banner-ad-inner {
+  animation: none;
+  border-color: var(--primary) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 32px rgba(209, 27, 27, 0.15) !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ----------------------------------------------------------
+   21. MOBILE MENU – STAGGER SLIDE IN
+   ---------------------------------------------------------- */
+.nav-links-wrapper.open .nav-links li {
+  animation: fadeSlideLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nav-links-wrapper.open .nav-links li:nth-child(1) { animation-delay: 0.05s; }
+.nav-links-wrapper.open .nav-links li:nth-child(2) { animation-delay: 0.10s; }
+.nav-links-wrapper.open .nav-links li:nth-child(3) { animation-delay: 0.15s; }
+.nav-links-wrapper.open .nav-links li:nth-child(4) { animation-delay: 0.20s; }
+
+/* ----------------------------------------------------------
+   22. SECTION BADGE PILL (NEW – reusable)
+   ---------------------------------------------------------- */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(209, 27, 27, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(209, 27, 27, 0.18);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.badge-pill:hover {
+  background: rgba(209, 27, 27, 0.14);
+  border-color: var(--primary);
+}
+
+/* ----------------------------------------------------------
+   23. "NEW" & "HOT" PRODUCT BADGE (refined)
+   ---------------------------------------------------------- */
+.product-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 10;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  animation: fadeSlideUp 0.4s ease both;
+}
+
+.product-badge-new {
+  background: var(--primary);
+  color: #fff;
+}
+
+.product-badge-hot {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  color: #fff;
+}
+
+/* ----------------------------------------------------------
+   24. INTERACTIVE CURSOR DOT (enabled via JS)
+   ---------------------------------------------------------- */
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(209, 27, 27, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.cursor-ring.hover-expand {
+  width: 52px;
+  height: 52px;
+  border-color: rgba(209, 27, 27, 0.7);
+}
+
+/* ----------------------------------------------------------
+   25. HERO TITLE ANIMATED GRADIENT
+   ---------------------------------------------------------- */
+.hero-title-animated {
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    #ddc9c9 30%,
+    var(--primary) 60%,
+    #000000 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ----------------------------------------------------------
+   26. SMOOTH HOVER UNDERLINE (utility)
+   ---------------------------------------------------------- */
+.hover-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.hover-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: currentColor;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-underline:hover::after {
+  width: 100%;
+}
+
+/* ----------------------------------------------------------
+   27. REDUCED MOTION SUPPORT
+   ---------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .product-card::after,
+  .hero-title-animated,
+  .top-banner-ad-inner {
+    animation: none !important;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
