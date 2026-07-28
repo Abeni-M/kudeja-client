@@ -6,10 +6,12 @@ import {
 } from '../../services/userAdminService';
 import toast from 'react-hot-toast';
 import { exportToCSV } from '../../utils/csvUtils';
+import { useAuth } from '../../context/AuthContext';
 
 import { LuDownload, LuRefreshCw } from 'react-icons/lu';
 
 const AdminUsers = () => {
+  const { isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -222,13 +224,13 @@ const AdminUsers = () => {
               <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>Email</th>
               <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>Role</th>
               <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>Status</th>
-              <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>Actions</th>
+              {isAdmin && <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan={isAdmin ? 6 : 5} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   No users found
                 </td>
               </tr>
@@ -244,41 +246,43 @@ const AdminUsers = () => {
                   <td style={{ padding: '15px' }}>
                     {user.isActive === false ? 'Inactive' : 'Active'}
                   </td>
-                  <td style={{ padding: '15px' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleSetRole(user.id, e.target.value)}
-                        style={{
-                          padding: '6px 10px',
-                          backgroundColor: 'var(--bg-body)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '3px',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {roles.filter(r => r !== 'All').map(r => (
-                          <option key={r} value={r}>{r}</option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleStatus(user.id, user.isActive === false)}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: user.isActive === false ? '#4CAF50' : '#FF9800',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '3px',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {user.isActive === false ? 'Activate' : 'Deactivate'}
-                      </button>
-                    </div>
-                  </td>
+                  {isAdmin && (
+                    <td style={{ padding: '15px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleSetRole(user.id, e.target.value)}
+                          style={{
+                            padding: '6px 10px',
+                            backgroundColor: 'var(--bg-body)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '3px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          {roles.filter(r => r !== 'All').map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(user.id, user.isActive === false)}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: user.isActive === false ? '#4CAF50' : '#FF9800',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                          }}
+                        >
+                          {user.isActive === false ? 'Activate' : 'Deactivate'}
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

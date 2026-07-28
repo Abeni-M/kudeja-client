@@ -4,6 +4,7 @@
   --primary: #d11b1b;
   --primary-dark: #a91212;
   --primary-light: #f87171;
+  --primary-glow: rgba(209, 27, 27, 0.28);
   --secondary: #1f2937;
   --accent: #ef4444;
   --danger: #ef4444;
@@ -43,10 +44,17 @@
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.18);
   
   /* Transitions */
   --transition: 0.3s ease;
+  --transition-fast: 0.15s ease;
+  --transition-slow: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Scroll progress (set by JS) */
+  --scroll-progress: 0;
 }
 
 [data-theme='dark'] {
@@ -71,6 +79,28 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* ── Scroll Progress Bar ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  transform: scaleX(var(--scroll-progress, 0));
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  z-index: 9999;
+  pointer-events: none;
+  will-change: transform;
+  border-radius: 0 999px 999px 0;
+}
+
+/* Global interactive element cursor */
+a, button, [role="button"], label[for], select, summary, [tabindex="0"] {
+  cursor: pointer;
 }
 
 body {

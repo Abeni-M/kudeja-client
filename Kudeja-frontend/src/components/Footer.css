@@ -84,11 +84,14 @@
 .footer-links a {
   color: #e5e7eb;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+  position: relative;
 }
 
 .footer-links a:hover {
   color: #ffffff;
+  transform: translateX(5px);
 }
 
 .footer-bottom {
@@ -120,13 +123,18 @@
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.05);
   color: #e5e7eb;
-  transition: all 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
   text-decoration: none;
 }
 
 .social-icon:hover {
-  transform: translateY(-3px);
+  transform: translateY(-6px) scale(1.12);
   color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 
 /* Brand specific hover colors */

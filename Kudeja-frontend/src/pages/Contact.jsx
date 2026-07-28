@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import emailjs from '@emailjs/browser';
 import { sendMessage } from '../services/messageService';
@@ -78,15 +79,32 @@ const Contact = () => {
   };
 
   return (
-    <div className="contact-page">
+    <motion.div 
+      className="contact-page"
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
       <SEO 
         title="Contact Us" 
         description="Get in touch with Kudeja Trading for inquiries about computers, security machines, and general trading services."
       />
       <div className="container">
-        <h1 className="page-title">Contact Us</h1>
+        <motion.h1 
+          className="page-title"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Contact Us
+        </motion.h1>
         <div className="contact-grid">
-          <div className="contact-info">
+          <motion.div 
+            className="contact-info reveal-left delay-1"
+            initial={{ opacity: 0, x: -25 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             <h3>Get in Touch</h3>
             <p>
               Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
@@ -107,8 +125,14 @@ const Contact = () => {
               <strong>🕒 Business Hours:</strong>
               <p>Monday - saturday: 8:00 AM - 6:00 PM</p>
             </div>
-          </div>
-          <div className="contact-form-container">
+          </motion.div>
+          
+          <motion.div 
+            className="contact-form-container reveal-right delay-2"
+            initial={{ opacity: 0, x: 25 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
             {submitted ? (
               <div className="success-message">
                 <h3>Thank You!</h3>
@@ -157,10 +181,10 @@ const Contact = () => {
                 </button>
               </form>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

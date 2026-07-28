@@ -155,7 +155,7 @@ async function start() {
     console.error('❌ Database startup error:', error.message);
   }
 
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Backend running at: http://localhost:${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   });
