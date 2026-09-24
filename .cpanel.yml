@@ -1,0 +1,15 @@
+---
+deployment:
+  tasks:
+    # ── 1. Install frontend dependencies ──
+    - export DEPLOYPATH=/home/kudejaet/public_html
+    # ── 2. Build the React frontend ──
+    - cd /home/kudejaet/repositories/kudeja-client/Kudeja-frontend && /bin/bash -c 'if command -v node &>/dev/null; then echo "Node $(node -v)"; else echo "ERROR: Node.js not found"; exit 1; fi'
+    - cd /home/kudejaet/repositories/kudeja-client/Kudeja-frontend && npm ci --production=false 2>&1 | tail -5
+    - cd /home/kudejaet/repositories/kudeja-client/Kudeja-frontend && npm run build 2>&1 | tail -10
+    # ── 3. Deploy built files to public_html ──
+    - /bin/bash -c 'rm -rf /home/kudejaet/public_html/assets'
+    - /bin/cp -rf /home/kudejaet/repositories/kudeja-client/Kudeja-frontend/dist/* /home/kudejaet/public_html/
+    - /bin/cp -f /home/kudejaet/repositories/kudeja-client/Kudeja-frontend/dist/.htaccess /home/kudejaet/public_html/.htaccess 2>/dev/null || true
+    # ── 4. Ensure .htaccess is in place for SPA routing ──
+    - /bin/cp -f /home/kudejaet/repositories/kudeja-client/.htaccess /home/kudejaet/public_html/.htaccess

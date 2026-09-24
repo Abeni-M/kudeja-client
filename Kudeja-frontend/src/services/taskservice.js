@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5000/api/tasks'; // adjust the port if needed
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/tasks` 
+  : 'http://localhost:5000/api/tasks'; // adjust the port if needed
 
 const getAuthToken = () => {
   return localStorage.getItem('token');

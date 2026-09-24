@@ -18,7 +18,8 @@ app.use(
       'http://localhost:5173',
       'http://localhost:5174', // current dev server
       'http://localhost:3000',
-    ],
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
     credentials: true,
   })
 );
@@ -35,7 +36,8 @@ const io = new Server(server, {
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
-    ],
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
     methods: ['GET', 'POST'],
     credentials: true
   }

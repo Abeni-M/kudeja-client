@@ -114,7 +114,7 @@ function initScrollProgress() {
 /* ── Boot after first paint ── */
 window.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
-  initCursor();
+  
   initScrollProgress();
 });
 
