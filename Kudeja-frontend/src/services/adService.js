@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/ads';
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/ads` 
+  : 'http://localhost:5000/api/ads';
 
 export const getAds = async () => {
   return await axios.get(API_URL);

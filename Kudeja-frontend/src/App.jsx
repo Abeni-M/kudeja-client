@@ -35,6 +35,20 @@ import ManageAds from './pages/admin/ManageAds';
 import LiveChatWidget from './components/LiveChatWidget';
 
 import { useData } from './context/DataContext';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const api = axios.create({
+  baseURL: API_URL,
+});
+import api from './api';
+
+// Example usage in a component function:
+api.get('/users')
+  .then(response => console.log(response.data))
+  .catch(error => console.error(error));
+export default api;
 
 const NotFound = () => (
   <div style={{ textAlign: 'center', padding: '6rem 2rem' }}>
