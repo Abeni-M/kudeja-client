@@ -6,6 +6,7 @@ import { useMessages } from '../context/MessageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LuShoppingCart, LuUser, LuLogOut, LuChevronDown, LuSearch, LuPackage, LuMail } from 'react-icons/lu';
 import './UserNavbar.css';
+import kudejaLogo from '../images/kudeja logo.png';
 
 const UserNavbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,7 +36,7 @@ const UserNavbar = () => {
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link to="/" className="user-navbar-logo">
             <img 
-              src="/src/images/kudeja logo.png" 
+              src={kudejaLogo} 
               alt="Kudeja Logo" 
               className="navbar-logo-img" 
             />

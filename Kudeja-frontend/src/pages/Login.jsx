@@ -17,7 +17,10 @@ const Login = () => {
     try {
       setSubmitting(true);
       await login(email, password);
+      toast.success('Successfully logged in!');
       navigate('/');
+    } catch (err) {
+      toast.error(err.message || 'Login failed');
     } finally {
       setSubmitting(false);
     }
@@ -46,8 +49,25 @@ const Login = () => {
         <h2>Login</h2>
         {error ? <div className="error-message">{error}</div> : null}
         <form onSubmit={handleSubmit}>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div style={{ textAlign: 'right', marginTop: '-0.5rem' }}>
+            <Link to="/forgot-password" style={{ fontSize: '0.82rem', color: '#667eea' }}>
+              Forgot password?
+            </Link>
+          </div>
           <button type="submit" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>

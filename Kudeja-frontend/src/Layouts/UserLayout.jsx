@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { ShoppingCart, User, Package, Home, Phone, Info } from 'lucide-react';
+import kudejaLogo from '../images/kudeja logo.png';
 
 function UserLayout() {
   return (
@@ -12,7 +13,7 @@ function UserLayout() {
             {/* Logo */}
             <Link to="/" className="flex items-center">
               <img 
-                src="/src/images/kudeja logo.png" 
+                src={kudejaLogo} 
                 alt="Kudeja Logo" 
                 className="h-24 w-auto object-contain transition-all nav-logo-img"
               />
@@ -69,7 +70,7 @@ function UserLayout() {
             <div>
               <div className="flex items-center mb-4">
                 <img 
-                  src="/src/images/kudeja logo.png" 
+                  src={kudejaLogo} 
                   alt="Kudeja Logo" 
                   className="h-24 w-auto object-contain brightness-0 invert footer-logo-img"
                 />

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMessages } from '../../context/MessageContext';
+import kudejaLogo from '../../images/kudeja logo.png';
 
 function AdminNavbar() {
   const { adminUnreadCount } = useMessages();
@@ -18,7 +19,7 @@ function AdminNavbar() {
     }}>
       <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
         <img 
-          src="/src/images/kudeja logo.png" 
+          src={kudejaLogo} 
           alt="Kudeja Logo" 
           className="nav-logo-img" 
           style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 

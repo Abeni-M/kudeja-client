@@ -10,14 +10,14 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
         ws: true,           // proxy websocket (Socket.io)
         // ❌ NO rewrite — /api/auth/login must reach backend as /api/auth/login
       },
       '/socket.io': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
         ws: true,

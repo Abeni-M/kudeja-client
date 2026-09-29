@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMessages } from '../context/MessageContext';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { sendMessage, getUserMessages, sendAIChat } from '../services/messageService';
 import { LuMessageSquare, LuX, LuSend, LuLoader } from 'react-icons/lu';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,10 +23,9 @@ const LiveChatWidget = () => {
         // Check AI Health status on mount
         const checkAI = async () => {
             try {
-                const res = await fetch('/api/health/ai');
-                if (res.ok) {
-                    const data = await res.json();
-                    setBotStatus(data.geminiActive ? ' Online' : '🤖 Assistant Online');
+                const res = await api.get('/health/ai');
+                if (res.data) {
+                    setBotStatus(res.data.geminiActive ? ' Online' : '🤖 Assistant Online');
                 } else {
                     setBotStatus(' Online');
                 }
