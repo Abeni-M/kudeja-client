@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
 import { useMessages } from '../context/MessageContext';
 import { motion } from 'framer-motion';
+import kudejaLogo from '../images/kudeja logo.png';
 
 const Navbar = () => {
   const { user, logout, isStaff } = useAuth();
@@ -34,7 +35,7 @@ const Navbar = () => {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link to="/" className="nav-logo" onClick={() => setIsMobileMenuOpen(false)}>
               <img 
-                src="/src/images/kudeja logo.png" 
+                src={kudejaLogo} 
                 alt="Kudeja Trading PLC" 
                 className="nav-logo-img" 
               />

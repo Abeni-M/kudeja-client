@@ -3,48 +3,41 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  padding: 0 1rem;
+  padding: 0.5rem 1.5rem;
   background: var(--bg-navbar);
   border-bottom: 1px solid var(--border-color);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(10px);
   box-shadow: var(--navbar-shadow);
-  transition:
-    padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-    background 0.4s ease,
-    box-shadow 0.4s ease,
-    backdrop-filter 0.4s ease;
-  will-change: padding, background;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar.scrolled {
-  padding: 0 2rem;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow:
     0 1px 0 rgba(0,0,0,0.06),
-    0 8px 32px rgba(0,0,0,0.08);
+    0 4px 20px rgba(0,0,0,0.08);
 }
 
 [data-theme='dark'] .navbar.scrolled {
-  background: rgba(17, 24, 39, 0.88);
+  background: rgba(17, 24, 39, 0.95);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.06),
-    0 8px 32px rgba(0,0,0,0.35);
+    0 4px 20px rgba(0,0,0,0.35);
 }
 
-/* Logo shrinks on scroll */
+/* Logo remains fixed size to prevent height recalculation and scroll shaking */
 .navbar.scrolled .nav-logo-img {
-  height: 120px;
-  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 65px;
 }
 
 .navbar-inner {
   display: flex;
   flex-direction: row; 
   justify-content: space-between;
-  align-items: flex-right; /* Push links to top */
-  padding: 0rem 2rem; /* Minimized top spacing */
+  align-items: center;
+  padding: 0 1rem;
   gap: 1rem;
 }
 
@@ -63,10 +56,10 @@
 }
 
 .nav-logo-img {
-  height: 180px; /* Increased perfect professional size */
-  width: 100%;
+  height: 65px;
+  width: auto;
   object-fit: contain;
-  transition: all var(--transition);
+  transition: opacity 0.3s ease;
 }
 
 [data-theme='dark'] .nav-logo-img {

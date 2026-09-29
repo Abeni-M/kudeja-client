@@ -30,12 +30,16 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const res = await apiLogin({ email, password });
-      localStorage.setItem('token', res.data.token);
-      setUser(res.data.user);
+      if (res.data && res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        setUser(res.data.user);
+      }
       return res.data;
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
-      throw err;
+      const message = err.response?.data?.message 
+        || (err.code === 'ERR_NETWORK' || !err.response ? 'Unable to connect to backend server. Please ensure the backend is running.' : 'Login failed. Please check your credentials.');
+      setError(message);
+      throw new Error(message);
     }
   };
 

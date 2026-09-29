@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const router = express.Router();
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -69,8 +70,8 @@ router.post('/register', async (req, res) => {
     }
 
     if (!isValidPasswordStrength(password)) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.'
       });
     }
@@ -91,20 +92,19 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    
-    // Handle Sequelize specific errors
+
     if (error.name === 'SequelizeUniqueConstraintError') {
       const field = error.errors[0].path;
-      return res.status(400).json({ 
-        success: false, 
-        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use another one.` 
+      return res.status(400).json({
+        success: false,
+        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use another one.`
       });
     }
-    
+
     if (error.name === 'SequelizeValidationError') {
-      return res.status(400).json({ 
-        success: false, 
-        message: error.errors[0].message 
+      return res.status(400).json({
+        success: false,
+        message: error.errors[0].message
       });
     }
 
@@ -115,14 +115,17 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/google
 router.post('/google', async (req, res) => {
   try {
-    const { credential } = req.body;
-    if (!credential) {
+    const { credential, token, idToken } = req.body;
+    const tokenToVerify = credential || token || idToken;
+
+    if (!tokenToVerify) {
       return res.status(400).json({ success: false, message: 'Google credential is required' });
     }
 
+    const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
     const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      idToken: tokenToVerify,
+      audience: clientId,
     });
     const payload = ticket.getPayload();
     const email = payload.email;
@@ -131,10 +134,7 @@ router.post('/google', async (req, res) => {
     let user = await User.findOne({ where: { email } });
 
     if (!user) {
-      // Create user if not exists.
-      // We must satisfy the strict password validation, so generate a secure random password.
       const secureRandomPassword = crypto.randomBytes(16).toString('hex') + 'A1!';
-      
       user = await User.create({
         username: name || email.split('@')[0],
         email: email,
@@ -146,16 +146,16 @@ router.post('/google', async (req, res) => {
       return res.status(403).json({ success: false, message: 'Account is disabled' });
     }
 
-    const token = signToken(user);
+    const jwtToken = signToken(user);
     return res.json({
       success: true,
       message: 'Google login successful',
-      token,
+      token: jwtToken,
       user: user.toJSON(),
     });
   } catch (error) {
     console.error('Google auth error:', error);
-    return res.status(401).json({ success: false, message: 'Invalid Google credential' });
+    return res.status(401).json({ success: false, message: 'Invalid Google credential', error: error.message });
   }
 });
 
@@ -188,11 +188,11 @@ router.put('/profile', protect, async (req, res) => {
     if (username) user.username = username;
     if (address !== undefined) user.address = address;
     if (profilePicture !== undefined) user.profilePicture = profilePicture;
-    
+
     if (password) {
       if (!isValidPasswordStrength(password)) {
-        return res.status(400).json({ 
-          success: false, 
+        return res.status(400).json({
+          success: false,
           message: 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.'
         });
       }
@@ -208,6 +208,89 @@ router.put('/profile', protect, async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/forgot-password
+// Generates a reset token and returns it (and a reset URL).
+// In production you would email this link; here it is returned in the response
+// so admin can copy it from the API response or browser console.
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      // Generic message for security (don't reveal if email exists)
+      return res.json({
+        success: true,
+        message: 'If an account with that email exists, a reset token has been generated.',
+      });
+    }
+
+    // Generate secure random token (64 hex chars)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // Expires in 1 hour
+
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+    await user.save();
+
+    const resetUrl = `${process.env.CLIENT_URL || 'https://market.kudeja.et'}/reset-password?token=${resetToken}`;
+
+    return res.json({
+      success: true,
+      message: 'Password reset token generated. Use the resetUrl to reset your password.',
+      resetToken,
+      resetUrl,
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Reset token and new password are required' });
+    }
+
+    if (!isValidPasswordStrength(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character (@$!%*?&).'
+      });
+    }
+
+    const user = await User.findOne({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: { [Op.gt]: new Date() }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired password reset token' });
+    }
+
+    user.password = newPassword; // beforeUpdate hook will bcrypt this
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: 'Password reset successful! You can now log in with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });

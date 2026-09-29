@@ -1,77 +1,29 @@
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/tasks` 
-  : 'http://localhost:5000/api/tasks'; // adjust the port if needed
-
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
+import api from './api';
 
 const taskService = {
   async getTasks() {
-    const response = await fetch(API_URL, {
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch tasks');
-    }
-    return response.json();
+    const res = await api.get('/tasks');
+    return res.data;
   },
 
   async getTask(id) {
-    const response = await fetch(`${API_URL}/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch task');
-    }
-    return response.json();
+    const res = await api.get(`/tasks/${id}`);
+    return res.data;
   },
 
   async createTask(taskData) {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(taskData),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to create task');
-    }
-    return response.json();
+    const res = await api.post('/tasks', taskData);
+    return res.data;
   },
 
   async updateTask(id, taskData) {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(taskData),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update task');
-    }
-    return response.json();
+    const res = await api.put(`/tasks/${id}`, taskData);
+    return res.data;
   },
 
   async deleteTask(id) {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to delete task');
-    }
-    return response.json();
+    const res = await api.delete(`/tasks/${id}`);
+    return res.data;
   },
 };
 

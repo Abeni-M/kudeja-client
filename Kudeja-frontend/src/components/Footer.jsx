@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaInstagram, FaTelegram, FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import './Footer.css';
+import kudejaLogo from '../images/kudeja logo.png';
 
 function Footer() {
   return (
@@ -10,7 +11,7 @@ function Footer() {
         <div className="footer-column">
           <div className="footer-logo">
             <img
-              src="/src/images/kudeja logo.png"
+              src={kudejaLogo}
               alt="Kudeja Trading PLC"
               className="footer-logo-img"
             />

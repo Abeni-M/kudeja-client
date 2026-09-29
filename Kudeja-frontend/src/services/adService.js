@@ -1,37 +1,21 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/ads` 
-  : 'http://localhost:5000/api/ads';
+import api from './api';
 
 export const getAds = async () => {
-  return await axios.get(API_URL);
+  return await api.get('/ads');
 };
 
 export const getAllAds = async () => {
-  const token = localStorage.getItem('token');
-  return await axios.get(`${API_URL}/all`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await api.get('/ads/all');
 };
 
 export const createAd = async (adData) => {
-  const token = localStorage.getItem('token');
-  return await axios.post(API_URL, adData, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await api.post('/ads', adData);
 };
 
 export const updateAd = async (id, adData) => {
-  const token = localStorage.getItem('token');
-  return await axios.put(`${API_URL}/${id}`, adData, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await api.put(`/ads/${id}`, adData);
 };
 
 export const deleteAd = async (id) => {
-  const token = localStorage.getItem('token');
-  return await axios.delete(`${API_URL}/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await api.delete(`/ads/${id}`);
 };

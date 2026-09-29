@@ -11,6 +11,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import About from './pages/About';
@@ -35,20 +37,6 @@ import ManageAds from './pages/admin/ManageAds';
 import LiveChatWidget from './components/LiveChatWidget';
 
 import { useData } from './context/DataContext';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-import api from './api';
-
-// Example usage in a component function:
-api.get('/users')
-  .then(response => console.log(response.data))
-  .catch(error => console.error(error));
-export default api;
 
 const NotFound = () => (
   <div style={{ textAlign: 'center', padding: '6rem 2rem' }}>
@@ -94,6 +82,8 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/products" element={<Products />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/about" element={<About />} />
