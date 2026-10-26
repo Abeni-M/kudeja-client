@@ -111,22 +111,47 @@ function initScrollProgress() {
   update();
 }
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 /* ── Boot after first paint ── */
-window.addEventListener('DOMContentLoaded', () => {
+const bootVisualEnhancements = () => {
   initScrollReveal();
-  
   initScrollProgress();
-});
+};
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'replace_with_your_client_id';
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', bootVisualEnhancements);
+} else {
+  bootVisualEnhancements();
+}
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <HelmetProvider>
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const hasValidGoogleId = Boolean(
+  googleClientId &&
+  googleClientId.trim() !== '' &&
+  !googleClientId.includes('replace_with_your_client_id')
+);
+
+const AppTree = () => (
+  <HelmetProvider>
+    {hasValidGoogleId ? (
       <GoogleOAuthProvider clientId={googleClientId}>
         <App />
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       </GoogleOAuthProvider>
-    </HelmetProvider>
+    ) : (
+      <>
+        <App />
+        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      </>
+    )}
+  </HelmetProvider>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <AppTree />
+    </ErrorBoundary>
   </React.StrictMode>
 );

@@ -38,19 +38,19 @@ function Home() {
   ];
 
   const [featured, setFeatured] = useState(() =>
-    enrichProductsWithImages(localProducts.slice(0, 4))
+    enrichProductsWithImages(localProducts.slice(0, 6))
   );
   const [ads, setAds] = useState([]);
   const [selectedAd, setSelectedAd] = useState(null);
 
   useEffect(() => {
     // Fetch products
-    getProducts({ limit: 4 })
+    getProducts({ limit: 6 })
       .then((res) => {
         const data = res?.data?.data ?? res?.data;
         const list = Array.isArray(data) ? data : [];
         if (list.length > 0) {
-          let norms = enrichProductsWithImages(normalizeProductList(list).slice(0, 4));
+          let norms = enrichProductsWithImages(normalizeProductList(list).slice(0, 6));
           norms = norms.map(norm => {
             if (!norm.imageUrl || norm.imageUrl.trim() === '') {
               const fallback = localProducts.find(p => String(p.id) === String(norm.id));
@@ -100,6 +100,8 @@ function Home() {
 
   const sidebarAds = ads.filter(ad => ad.placement !== 'banner');
   const bannerAds = ads.filter(ad => ad.placement === 'banner');
+  // Both horizontal and vertical ads fit into the vertical sidebar
+  const effectiveSidebarAds = sidebarAds.length > 0 ? sidebarAds : ads;
 
   return (
     <div className="home-page">
@@ -248,11 +250,11 @@ function Home() {
         </div>
 
         {/* Vertical Ads Sidebar - Desktop Only */}
-        {sidebarAds && sidebarAds.length > 0 && (
+        {effectiveSidebarAds && effectiveSidebarAds.length > 0 && (
           <aside className="home-sidebar-ads desktop-only">
             <h3 className="sidebar-ads-title">Sponsored Partners</h3>
             <div className="sidebar-ads-list">
-              {sidebarAds.map((ad) => (
+              {effectiveSidebarAds.map((ad) => (
                 <SidebarAdItem key={ad.id} ad={ad} onClick={() => setSelectedAd(ad)} />
               ))}
             </div>
@@ -348,7 +350,7 @@ function Home() {
           <h2 className="section-title">Sponsored Partners</h2>
         </div>
         <div className="mobile-ads-slider">
-           {sidebarAds.map((ad) => (
+           {effectiveSidebarAds.map((ad) => (
              <SidebarAdItem key={ad.id} ad={ad} onClick={() => setSelectedAd(ad)} />
            ))}
         </div>
@@ -400,10 +402,12 @@ const SidebarAdItem = ({ ad, onClick }) => {
     return () => clearInterval(timer);
   }, [allImages.length, ad.slideInterval]);
 
+  const activeImg = allImages[currentIdx] || ad.image;
+
   return (
     <motion.div 
       className="sidebar-ad-card"
-      whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+      whileHover={{ y: -4, boxShadow: "0 10px 24px rgba(0,0,0,0.12)" }}
       onClick={onClick}
     >
       <div className="sidebar-ad-header">
@@ -411,14 +415,19 @@ const SidebarAdItem = ({ ad, onClick }) => {
         <span className="sidebar-ad-tag">Ad</span>
       </div>
       <div className="sidebar-ad-image">
+        {activeImg && (
+          <div 
+            className="sidebar-ad-backdrop" 
+            style={{ backgroundImage: `url(${activeImg})` }} 
+          />
+        )}
         <img
-          key={allImages[currentIdx]}
-          src={allImages[currentIdx]}
+          key={activeImg}
+          src={activeImg}
           alt={ad.companyName}
-          style={{ transition: 'opacity 0.5s ease' }}
+          className="sidebar-ad-img-fitted"
           onError={e => {
             e.target.style.display = 'none';
-            e.target.parentElement.style.background = 'var(--bg-card)';
           }}
         />
       </div>
@@ -448,20 +457,39 @@ const TopBannerAds = ({ ads, onClick }) => {
   return (
     <motion.div 
       className="top-banner-ad-container"
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
       onClick={() => onClick(activeAd)}
     >
       <div className="top-banner-ad-inner">
-        <span className="top-banner-badge">Sponsor</span>
-        <img 
-          key={activeAd.image}
-          src={activeAd.image} 
-          alt={activeAd.companyName} 
-          className="top-banner-ad-image"
-          onError={e => { e.target.style.display = 'none'; }}
-        />
+        {activeAd.image && (
+          <div 
+            className="top-banner-backdrop" 
+            style={{ backgroundImage: `url(${activeAd.image})` }} 
+          />
+        )}
+        <div className="top-banner-content">
+          <div className="top-banner-media">
+            <span className="top-banner-badge">Sponsor</span>
+            <img 
+              key={activeAd.image}
+              src={activeAd.image} 
+              alt={activeAd.companyName} 
+              className="top-banner-ad-image"
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+          </div>
+          <div className="top-banner-info">
+            <h4 className="top-banner-title">{activeAd.companyName}</h4>
+            {activeAd.description && (
+              <p className="top-banner-desc">{activeAd.description}</p>
+            )}
+          </div>
+          <div className="top-banner-action">
+            <span className="top-banner-btn">Learn More &rarr;</span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

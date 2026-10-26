@@ -3,35 +3,15 @@ const router = express.Router();
 const { Product, Category } = require('../models');
 const { protect } = require('../middleware/authMiddleware');
 const { requirePermission } = require('../middleware/permissions');
-const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const { upload, getPublicUrl, uploadsDir } = require('./uploadRoutes');
 
-// Target the frontend's images directory directly
+// Target the frontend's images directory directly in local development (if present)
 const frontendImagesDir = path.join(__dirname, '../../Kudeja-frontend/public/images');
 
-// Configure Multer for local disk storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, frontendImagesDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, 'product-' + uniqueSuffix + ext);
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Only image files are allowed'), false);
-  },
-});
-
 // @route   POST /api/products/upload
-// @desc    Upload product image locally
+// @desc    Upload product image locally and publicly
 // @access  Private/Admin
 router.post('/upload', protect, requirePermission('products:write'), upload.single('image'), async (req, res) => {
   try {
@@ -39,21 +19,33 @@ router.post('/upload', protect, requirePermission('products:write'), upload.sing
       return res.status(400).json({ success: false, message: 'No image file provided' });
     }
 
-    // The frontend Vite server hosts /images automatically from its public folder.
-    const url = `/images/${req.file.filename}`;
-    res.json({ success: true, url, public_id: req.file.filename });
+    const filename = req.file.filename;
+    const url = getPublicUrl(req, filename);
+
+    // If running alongside local frontend repo, also copy to frontend public/images for instant Vite sync
+    try {
+      if (fs.existsSync(frontendImagesDir)) {
+        const dest = path.join(frontendImagesDir, filename);
+        fs.copyFileSync(req.file.path, dest);
+      }
+    } catch (_) {}
+
+    res.json({
+      success: true,
+      url,
+      relativeUrl: `/uploads/${filename}`,
+      public_id: filename,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Upload failed', error: error.message });
   }
 });
-
 
 // @route   GET /api/products
 // @desc    Get all products
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    // Add pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -174,7 +166,6 @@ router.post('/:id/reviews', protect, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Prepare current reviews array
     let currentReviews = product.reviews;
     if (!currentReviews) {
       currentReviews = [];
@@ -182,7 +173,6 @@ router.post('/:id/reviews', protect, async (req, res) => {
       currentReviews = JSON.parse(currentReviews);
     }
 
-    // Check if user already reviewed
     const alreadyReviewed = currentReviews.find(
       (r) => String(r.userId) === String(req.user.id)
     );
@@ -198,9 +188,7 @@ router.post('/:id/reviews', protect, async (req, res) => {
       date: new Date().toISOString()
     };
 
-    // Crucial: Must create a totally new array reference for Sequelize to execute the UPDATE query on JSON/JSONB
     const updatedReviews = [...currentReviews, newReview];
-
     await product.update({ reviews: updatedReviews });
 
     res.status(201).json({

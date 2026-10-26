@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import toast from 'react-hot-toast';
 import './Login.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, googleLogin, error } = useAuth();
@@ -56,13 +58,18 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="button" className="eye-toggle" onClick={() => setShowPassword(p => !p)}>
+              {showPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
+            </button>
+          </div>
           <div style={{ textAlign: 'right', marginTop: '-0.5rem' }}>
             <Link to="/forgot-password" style={{ fontSize: '0.82rem', color: '#667eea' }}>
               Forgot password?

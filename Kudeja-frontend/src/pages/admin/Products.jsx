@@ -1,13 +1,109 @@
 // src/pages/admin/Products.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { getProducts, createProduct, updateProduct, deleteProduct, uploadProductImage } from '../../services/productService';
 import { getCategories, createCategory } from '../../services/categoryService';
 import { getProductImageUrl } from '../../utils/productImages';
 import { formatPrice } from '../../utils/formatters';
 import { exportToCSV } from '../../utils/csvUtils';
-import { LuPlus, LuPencil, LuTrash, LuImage, LuUpload, LuDownload } from 'react-icons/lu';
+import { LuPlus, LuPencil, LuTrash, LuImage, LuUpload, LuDownload, LuX, LuSearch } from 'react-icons/lu';
 import toast from 'react-hot-toast';
 import '../../styles/admin.css';
+
+// ─── Load ALL local images from src/images/ via Vite glob ──────────────────
+const imageModules = import.meta.glob('../../images/*', { eager: true });
+const localImages = Object.entries(imageModules).map(([path, mod]) => ({
+  name: path.split('/').pop(),
+  url: mod.default,
+}));
+
+// Image picker modal component
+const ProductImagePickerModal = ({ onSelect, onClose, currentUrl }) => {
+  const [search, setSearch] = useState('');
+  const filtered = useMemo(() =>
+    localImages.filter(img =>
+      img.name.toLowerCase().includes(search.toLowerCase())
+    ), [search]);
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 2500,
+        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'var(--admin-bg, #1a1a2e)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '720px',
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+          <h4 style={{ margin: 0, color: 'var(--admin-text)', fontWeight: 700 }}>
+            🖼️ Pick from Local Image Library
+          </h4>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--admin-text)', cursor: 'pointer', fontSize: '1.4rem' }}>
+            <LuX />
+          </button>
+        </div>
+        <div style={{ padding: '0.85rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+          <div style={{ position: 'relative' }}>
+            <LuSearch size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-muted)' }} />
+            <input
+              type="text"
+              placeholder="Search local images..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.65rem 0.75rem 0.65rem 2.25rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-body)',
+                color: 'var(--admin-text)',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        </div>
+        <div style={{ overflowY: 'auto', padding: '1rem 1.5rem', flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            {filtered.map(img => (
+              <div
+                key={img.url}
+                onClick={() => { onSelect(img.url); onClose(); }}
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: currentUrl === img.url ? '2px solid var(--primary, #d11b1b)' : '1px solid var(--border-color)',
+                  background: 'var(--bg-card)',
+                  padding: '4px',
+                }}
+              >
+                <img src={img.url} alt={img.name} style={{ width: '100%', height: '80px', objectFit: 'contain' }} />
+                <div style={{ fontSize: '0.68rem', textAlign: 'center', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {img.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -15,6 +111,9 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const desktopFileInputRef = useRef(null);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +188,7 @@ export default function AdminProducts() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
+    setShowImagePicker(false);
   };
 
   const handleSubmit = async (e) => {
@@ -164,21 +264,37 @@ export default function AdminProducts() {
     }
   };
 
-  const handleImageFileChange = async (file) => {
+    const handleImageFileChange = async (file) => {
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose a valid image file (PNG, JPG, WEBP, etc.)');
+      return;
+    }
+
     setImageUploading(true);
+    const toastId = toast.loading('Uploading product image to server...');
+
     try {
       const res = await uploadProductImage(file);
-      const url = res?.data?.url;
-      if (url) {
-        setFormData((prev) => ({ ...prev, image_url: url }));
-        toast.success('Image uploaded!');
+      const serverUrl = res?.data?.url || res?.url;
+      if (serverUrl) {
+        setFormData((prev) => ({ ...prev, image_url: serverUrl }));
+        toast.success('Product image uploaded!', { id: toastId });
+        setImageUploading(false);
+        return;
       }
     } catch (err) {
-      toast.error('Image upload failed. Check Cloudinary credentials.');
-    } finally {
-      setImageUploading(false);
+      console.warn('Backend image upload error; falling back to local reader.', err);
     }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      setFormData((prev) => ({ ...prev, image_url: dataUrl }));
+      toast.success('Image loaded (offline preview)', { id: toastId });
+      setImageUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleExport = () => {
@@ -362,44 +478,98 @@ export default function AdminProducts() {
               )}
 
               <div className="admin-form-group">
-                <label>Product Image</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ margin: 0, fontWeight: 600 }}>Product Image</label>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--outline"
+                    style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                    onClick={() => setShowImagePicker(true)}
+                  >
+                    <LuImage size={14} /> Pick from Library
+                  </button>
+                </div>
+
+                {/* Hidden file input for file chooser */}
+                <input
+                  ref={desktopFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageFileChange(file);
+                    e.target.value = '';
+                  }}
+                />
+
+                {/* Unified Drag-and-drop / Choose Image zone */}
                 <div
-                  className="admin-image-upload-zone"
-                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); }}
-                  onDragLeave={(e) => e.currentTarget.classList.remove('dragover')}
+                  className={`admin-image-upload-zone${isDragging ? ' dragover' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
                   onDrop={(e) => {
                     e.preventDefault();
-                    e.currentTarget.classList.remove('dragover');
-                    const file = e.dataTransfer.files[0];
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
                     if (file) handleImageFileChange(file);
                   }}
+                  onClick={() => desktopFileInputRef.current?.click()}
+                  style={{ cursor: 'pointer', padding: '1.25rem 1rem' }}
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageFileChange(e.target.files[0])}
-                  />
-                  <div className="upload-icon"><LuUpload size={28} /></div>
+                  <div className="upload-icon" style={{ marginBottom: '0.4rem' }}>
+                    <LuUpload size={28} />
+                  </div>
                   {imageUploading ? (
                     <p className="upload-label">
                       <span className="admin-upload-spinner" />
                       Uploading…
                     </p>
                   ) : formData.image_url ? (
-                    <p className="upload-label" style={{ color: 'var(--admin-text)', fontWeight: 600 }}>
-                      ✓ Image ready — click or drag to replace
-                    </p>
+                    <div>
+                      <p className="upload-label" style={{ color: 'var(--admin-text)', fontWeight: 600, margin: '0 0 0.25rem' }}>
+                        ✓ Image selected
+                      </p>
+                      <span className="admin-btn admin-btn--outline" style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem' }}>
+                        Click to change image
+                      </span>
+                    </div>
                   ) : (
-                    <p className="upload-label">Click or drag &amp; drop an image here (max 5 MB)</p>
+                    <div>
+                      <span className="admin-btn admin-btn--primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '0.45rem 1rem', marginBottom: '0.4rem', pointerEvents: 'none' }}>
+                        <LuUpload size={14} /> Choose Image
+                      </span>
+                      <p className="upload-label" style={{ margin: 0, fontSize: '0.82rem' }}>
+                        or drag &amp; drop an image here (max 5 MB)
+                      </p>
+                    </div>
                   )}
                 </div>
+
                 {formData.image_url && (
-                  <img
-                    src={formData.image_url}
-                    alt="preview"
-                    className="admin-upload-preview"
-                  />
+                  <div style={{ position: 'relative', marginTop: '0.75rem' }}>
+                    <img
+                      src={getProductImageUrl(formData.image_url)}
+                      alt="preview"
+                      className="admin-upload-preview"
+                      style={{ marginTop: 0 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(p => ({ ...p, image_url: '' }))}
+                      style={{
+                        position: 'absolute', top: '0.5rem', right: '0.5rem',
+                        background: 'rgba(0,0,0,0.65)', border: 'none', color: '#fff',
+                        borderRadius: '50%', width: 26, height: 26, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}
+                      title="Remove Image"
+                    >
+                      <LuX size={14} />
+                    </button>
+                  </div>
                 )}
+
                 {/* Fallback: paste a URL directly */}
                 <input
                   type="text"
@@ -410,6 +580,15 @@ export default function AdminProducts() {
                   style={{ marginTop: '0.5rem' }}
                 />
               </div>
+
+              {/* Image library picker modal */}
+              {showImagePicker && (
+                <ProductImagePickerModal
+                  currentUrl={formData.image_url}
+                  onSelect={(url) => { setFormData(p => ({ ...p, image_url: url })); setShowImagePicker(false); }}
+                  onClose={() => setShowImagePicker(false)}
+                />
+              )}
 
               <div className="admin-form-group">
                 <label>Description</label>

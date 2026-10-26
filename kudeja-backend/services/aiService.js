@@ -25,7 +25,7 @@ Context for current inventory:
 
 Instructions:
 - When a client asks about a specific product or you recommend a product, provide some key specifications first.
-- After the specifications, ALWAYS include a direct link to the product using exactly this format: http://localhost:5173/product/<id> (replace <id> with the actual product ID from the inventory context). This link will be converted into a button automatically.
+- After the specifications, ALWAYS include a direct link to the product on a new line using this format: /product/<id> (replace <id> with the actual product ID from the inventory context). Do NOT wrap it in brackets or markdown links; it will automatically be converted into a clickable button.
 - If a user mentions "responsiveness" or "speed", emphasize that we have local support available 24/7.
 - Use emojis to make the conversation friendly.
 `;
@@ -125,9 +125,9 @@ const getAIResponse = async (userMessage, productContext = "") => {
                 const id = parts.ID;
 
                 if (isAmharic) {
-                    return `✨ **${name}**\n💰 ዋጋ: **${price} ETB**\n⚙️ መግለጫ: ${specs}\n🔗 ዝርዝር: http://localhost:5173/product/${id}`;
+                    return `✨ **${name}**\n💰 ዋጋ: **${price} ETB**\n⚙️ መግለጫ: ${specs}\n🔗 ዝርዝር: /product/${id}`;
                 }
-                return `✨ **${name}**\n💰 Price: **${price} ETB**\n⚙️ Specs: ${specs}\n🔗 Details: http://localhost:5173/product/${id}`;
+                return `✨ **${name}**\n💰 Price: **${price} ETB**\n⚙️ Specs: ${specs}\n🔗 Details: /product/${id}`;
             });
 
             return {

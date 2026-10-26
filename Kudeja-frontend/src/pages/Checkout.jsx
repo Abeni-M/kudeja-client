@@ -5,7 +5,9 @@ import { useCart } from '../context/CartContext';
 import { createOrder } from '../services/orderService';
 import { initializePayment } from '../services/paymentService';
 import { formatPrice } from '../utils/formatters';
+import BankPaymentModal from '../components/BankPaymentModal';
 import PaymentMethods from '../components/PaymentMethods';
+import toast from 'react-hot-toast';
 import './Checkout.css';
 
 function Checkout() {
@@ -25,6 +27,9 @@ function Checkout() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentReceipt, setPaymentReceipt] = useState(null);
+  const [transactionRef, setTransactionRef] = useState('');
+  const [showBankModal, setShowBankModal] = useState(false);
 
   const itemsPayload = useMemo(() => {
     return cartItems.map((item) => ({
@@ -42,6 +47,46 @@ function Checkout() {
     setShipping((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleSelectPaymentMethod = (method) => {
+    setPaymentMethod(method);
+    setShowBankModal(true);
+  };
+
+  const handleConfirmBankPayment = async ({ paymentMethod: method, paymentReceipt: receipt, transactionRef: ref }) => {
+    if (!shipping.fullName || !shipping.phone || !shipping.addressLine1 || !shipping.city) {
+      toast.error('Please fill in your delivery details (Full name, phone, address, and city) first.');
+      setShowBankModal(false);
+      return;
+    }
+
+    setPaymentMethod(method);
+    setPaymentReceipt(receipt);
+    setTransactionRef(ref);
+
+    try {
+      setSubmitting(true);
+      setLoadingStep('Submitting order with payment screenshot...');
+      const orderResponse = await createOrder({
+        items: itemsPayload,
+        total: cartTotal,
+        shippingAddress: { ...shipping, transactionRef: ref },
+        paymentMethod: method,
+        paymentReceipt: receipt,
+      });
+
+      toast.success('🎉 Order placed successfully! We have received your payment screenshot.');
+      setShowBankModal(false);
+      clearCart();
+      navigate('/orders');
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to place order';
+      toast.error(msg);
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setError('');
@@ -53,6 +98,13 @@ function Checkout() {
 
     if (!paymentMethod) {
       setError('Please select a payment method.');
+      toast.error('Please select a payment method.');
+      return;
+    }
+
+    // If client hasn't attached a transfer receipt screenshot yet, pop up the bank modal!
+    if (!paymentReceipt) {
+      setShowBankModal(true);
       return;
     }
 
@@ -62,42 +114,18 @@ function Checkout() {
       const orderResponse = await createOrder({
         items: itemsPayload,
         total: cartTotal,
-        shippingAddress: shipping,
+        shippingAddress: { ...shipping, transactionRef },
         paymentMethod,
+        paymentReceipt,
       });
 
-      const orderId = orderResponse.data.data.id;
-
-      // 3. Initialize Payment (Real logic simulation)
-      const redirectMethods = ['Telebirr', 'CBE Birr', 'Visa', 'Mastercard', 'PayPal', 'CBE Bank', 'Awash Bank', 'Abyssinia'];
-      if (redirectMethods.includes(paymentMethod)) {
-        setLoadingStep(`Connecting to ${paymentMethod} Secure Gateway...`);
-        const paymentResponse = await initializePayment({
-          amount: cartTotal,
-          tx_ref: orderId,
-          email: user?.email || 'customer@kudeja.com',
-          first_name: user?.name?.split(' ')[0] || shipping.fullName.split(' ')[0],
-          last_name: user?.name?.split(' ')[1] || shipping.fullName.split(' ')[1] || 'Customer',
-          payment_method: paymentMethod
-        });
-
-        if (paymentResponse.data.success) {
-          // REDIRECT TO CHAPA CHECKOUT
-          window.location.href = paymentResponse.data.data.checkout_url;
-          return;
-        }
-      }
-
       clearCart();
+      toast.success('🎉 Order placed successfully!');
       navigate('/orders');
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to place order');
     } finally {
-      // Keep submitting true if we are redirecting, otherwise hide overlay
-      const isRedirectMethod = ['Telebirr', 'CBE Birr', 'Visa', 'Mastercard', 'PayPal', 'CBE Bank', 'Awash Bank', 'Abyssinia'].includes(paymentMethod);
-      if (!isRedirectMethod) {
-         setSubmitting(false);
-      }
+      setSubmitting(false);
     }
   };
 
@@ -163,7 +191,9 @@ function Checkout() {
             <div className="form-row">
               <PaymentMethods 
                 selectedMethod={paymentMethod} 
-                onSelect={setPaymentMethod} 
+                onSelect={handleSelectPaymentMethod} 
+                hasReceipt={Boolean(paymentReceipt)}
+                onOpenModal={() => setShowBankModal(true)}
               />
             </div>
 
@@ -177,6 +207,15 @@ function Checkout() {
             </div>
           </form>
         </div>
+
+        <BankPaymentModal
+          isOpen={showBankModal}
+          onClose={() => setShowBankModal(false)}
+          paymentMethod={paymentMethod || 'Telebirr'}
+          cartTotal={cartTotal}
+          onConfirmOrder={handleConfirmBankPayment}
+          isSubmitting={submitting}
+        />
 
         <aside className="checkout-summary">
           <h3>Order Summary</h3>

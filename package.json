@@ -1,4 +1,12 @@
 {
+  "name": "kudeja-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd Kudeja-frontend && npm install && npm run build",
+    "build:frontend": "cd Kudeja-frontend && npm run build",
+    "start": "node kudeja-backend/server.js"
+  },
   "dependencies": {
     "@supabase/server": "^1.4.0",
     "@supabase/ssr": "^0.12.3",

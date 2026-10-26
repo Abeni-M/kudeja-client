@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { resetPassword } from '../services/authService';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import toast from 'react-hot-toast';
 import './Login.css';
 
@@ -11,6 +12,8 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,21 +85,31 @@ const ResetPassword = () => {
                   style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
                 />
               )}
-              <input
-                type="password"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                autoFocus
-              />
-              <input
-                type="password"
-                placeholder="Confirm New Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  autoFocus
+                />
+                <button type="button" className="eye-toggle" onClick={() => setShowNew(p => !p)}>
+                  {showNew ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                </button>
+              </div>
+              <div className="password-wrapper">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button type="button" className="eye-toggle" onClick={() => setShowConfirm(p => !p)}>
+                  {showConfirm ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                </button>
+              </div>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '-0.25rem' }}>
                 Min 8 chars, uppercase, lowercase, number &amp; special char (@$!%*?&amp;)
               </p>

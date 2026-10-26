@@ -5,6 +5,8 @@ import { verifyPayment } from '../services/paymentService';
 import { LuStar } from 'react-icons/lu';
 import { formatPrice } from '../utils/formatters';
 import toast from 'react-hot-toast';
+import socket from '../services/socket';
+import { useAuth } from '../context/AuthContext';
 import './Orders.css';
 
 const STATUS_COLORS = {
@@ -95,40 +97,9 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const trxRef = searchParams.get('trx_ref');
-    if (trxRef) {
-      // First check if we already have this order as paid
-      const isAlreadyPaid = orders.find(o => String(o.id) === trxRef && o.status === 'paid');
-      if (isAlreadyPaid) {
-        toast.success('Payment already confirmed!');
-        // Clear param
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-
-      setLoading(true);
-      verifyPayment(trxRef)
-        .then(() => {
-          toast.success('Payment verified successfully!');
-          load(true);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        })
-        .catch(() => {
-          toast.error('Payment verification failed. Please contact support.');
-          setLoading(false);
-        });
-    }
-  }, [searchParams, orders]);
-
-  useEffect(() => {
-    if (location.state?.message) {
-      toast.success(location.state.message, { duration: 5000 });
-      // Clear state so it doesn't show again on refresh
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
+  const location = useLocation();
+  const { user } = useAuth();
+  const intervalRef = useRef(null);
 
   const load = async (showLoader = false) => {
     try {
@@ -145,11 +116,56 @@ function Orders() {
   };
 
   useEffect(() => {
+    const trxRef = searchParams.get('trx_ref');
+    if (!trxRef) return;
+
+    const isAlreadyPaid = orders.find(o => String(o.id) === trxRef && o.status === 'paid');
+    if (isAlreadyPaid) {
+      toast.success('Payment already confirmed!');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    setLoading(true);
+    verifyPayment(trxRef)
+      .then(() => {
+        toast.success('Payment verified successfully!');
+        load(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch(() => {
+        toast.error('Payment verification failed. Please contact support.');
+        setLoading(false);
+      });
+  }, [searchParams, orders]);
+
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message, { duration: 5000 });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  useEffect(() => {
     load(true);
-    // Auto-refresh every 30 seconds to reflect admin status changes
+
+    // Auto-refresh every 30 seconds as a fallback, in case the live socket
+    // update below is missed (page backgrounded, brief disconnect, etc.)
     intervalRef.current = setInterval(() => load(false), 30000);
     return () => clearInterval(intervalRef.current);
   }, []);
+
+  useEffect(() => {
+    const handleOrderUpdate = (payload) => {
+      if (!user || payload.userId !== user.id) return;
+      setOrders((prev) =>
+        prev.map((o) => (o.id === payload.orderId ? { ...o, status: payload.status } : o))
+      );
+    };
+
+    socket.on('order-updated', handleOrderUpdate);
+    return () => socket.off('order-updated', handleOrderUpdate);
+  }, [user]);
 
   if (loading) {
     return (

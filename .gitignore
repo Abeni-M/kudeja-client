@@ -13,6 +13,7 @@ package-lock.json
 dist/
 dist-ssr/
 build/
+!Kudeja-frontend/dist/**
 
 # Logs
 *.log

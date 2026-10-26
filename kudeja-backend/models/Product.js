@@ -38,7 +38,7 @@ const Product = sequelize.define(
       },
     },
     image_url: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     // Structured list of specs, e.g. ["CPU: i7", "RAM: 16GB"]
     specs: {

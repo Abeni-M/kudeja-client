@@ -23,18 +23,25 @@ export const DataProvider = ({ children }) => {
     completedOrders: 544
   });
 
+  const defaultSettings = {
+    siteTitle: 'Kudeja Admin',
+    siteDescription: 'Kudeja Administration Panel',
+    maintenanceMode: false,
+    userRegistration: true,
+    emailNotifications: true,
+    darkMode: false,
+    itemsPerPage: 25,
+    timezone: 'UTC'
+  };
+
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('kudeja_admin_settings');
-    return saved ? JSON.parse(saved) : {
-      siteTitle: 'Kudeja Admin',
-      siteDescription: 'Kudeja Administration Panel',
-      maintenanceMode: false,
-      userRegistration: true,
-      emailNotifications: true,
-      darkMode: false,
-      itemsPerPage: 25,
-      timezone: 'UTC'
-    };
+    try {
+      const saved = localStorage.getItem('kudeja_admin_settings');
+      return saved ? JSON.parse(saved) : defaultSettings;
+    } catch (e) {
+      console.warn('Failed to parse kudeja_admin_settings from localStorage:', e);
+      return defaultSettings;
+    }
   });
 
   const [notifications, setNotifications] = useState([

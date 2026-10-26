@@ -111,7 +111,7 @@ const Contact = () => {
             </p>
             <div className="info-item">
               <strong>📍 Address:</strong>
-              <p>Bole Sub-city, Addis Ababa, Ethiopia</p>
+              <p>kirkos Sub-city, Addis Ababa, Ethiopia</p>
             </div>
             <div className="info-item">
               <strong>📞 Phone:</strong>

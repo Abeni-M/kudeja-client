@@ -1,0 +1,414 @@
+/* Bank Payment Modal Styles */
+.bank-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: bankFadeIn 0.2s ease-out;
+}
+
+@keyframes bankFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bank-modal-card {
+  background: var(--bg-card, #ffffff);
+  color: var(--text-main, #0f172a);
+  border-radius: 18px;
+  width: 100%;
+  maxWidth: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color, #e2e8f0);
+  overflow: hidden;
+  animation: bankSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bankSlideUp {
+  from { transform: translateY(20px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.bank-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-navbar, #f8fafc);
+}
+
+.bank-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.bank-modal-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 4px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.bank-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.bank-modal-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary, #d11b1b);
+  background: rgba(209, 27, 27, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-top: 3px;
+}
+
+.bank-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.bank-modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main, #0f172a);
+}
+
+.bank-modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.bank-amount-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(209, 27, 27, 0.08) 100%);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.bank-amount-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.bank-amount-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary, #d11b1b);
+}
+
+.bank-details-box {
+  background: var(--bg-body, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.bank-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.bank-details-label {
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.bank-details-val {
+  font-weight: 600;
+  color: var(--text-main, #0f172a);
+}
+
+.bank-account-name {
+  color: var(--primary, #d11b1b);
+}
+
+.bank-details-row.highlight-row {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+
+.bank-account-num-display {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-main, #0f172a);
+  margin-top: 2px;
+}
+
+.bank-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--primary, #d11b1b);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bank-copy-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.bank-copy-btn.copied {
+  background: #10b981;
+}
+
+.bank-instruction-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  color: #b45309;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.bank-instruction-hint p {
+  margin: 0;
+}
+
+.bank-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.bank-upload-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+}
+
+.required-star {
+  color: #ef4444;
+}
+
+.bank-dropzone {
+  border: 2px dashed var(--border-color, #cbd5e1);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  background: var(--bg-body, #f8fafc);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bank-dropzone:hover,
+.bank-dropzone.dragover {
+  border-color: var(--primary, #d11b1b);
+  background: rgba(209, 27, 27, 0.04);
+}
+
+.bank-dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(209, 27, 27, 0.1);
+  color: var(--primary, #d11b1b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.bank-dropzone-main {
+  font-size: 0.85rem;
+  color: var(--text-main, #0f172a);
+  margin: 0 0 0.25rem;
+}
+
+.bank-dropzone-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+.bank-receipt-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-body, #f8fafc);
+}
+
+.bank-receipt-preview img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+}
+
+.bank-receipt-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.bank-receipt-filename {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bank-remove-receipt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.bank-remove-receipt-btn:hover {
+  text-decoration: underline;
+}
+
+.bank-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bank-form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.bank-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-main, #0f172a);
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.bank-input:focus {
+  outline: none;
+  border-color: var(--primary, #d11b1b);
+}
+
+.bank-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.bank-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--primary, #d11b1b);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.bank-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(209, 27, 27, 0.4);
+}
+
+.bank-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bank-cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-muted, #64748b);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.bank-cancel-btn:hover {
+  background: var(--bg-body, #f8fafc);
+  color: var(--text-main, #0f172a);
+}

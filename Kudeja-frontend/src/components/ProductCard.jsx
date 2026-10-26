@@ -83,7 +83,7 @@ export default function ProductCard({ product }) {
             disabled={stock <= 0}
             title={stock <= 0 ? "Out of Stock" : "Add to Cart"}
           >
-            <LuShoppingCart size={18} />
+            <LuShoppingCart size={15} />
           </button>
           {href ? (
             <Link to={href} className="btn-view-compact" title="View Details">

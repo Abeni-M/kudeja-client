@@ -27,6 +27,10 @@ const Order = sequelize.define(
       allowNull: true,
       defaultValue: 'Cash on Delivery',
     },
+    payment_receipt: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     total: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

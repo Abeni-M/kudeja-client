@@ -230,20 +230,21 @@
 }
 
 .chat-product-link {
-    display: inline-block;
+    display: block;
     width: 100%;
     margin-top: 0.75rem;
     padding: 0.75rem 1rem;
     background: var(--primary);
     color: white !important;
     text-decoration: none;
+    border: none;
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 700;
     text-align: center;
+    cursor: pointer;
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-product-link:hover {

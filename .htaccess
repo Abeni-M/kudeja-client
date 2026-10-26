@@ -7,11 +7,23 @@ RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # ━━━ 2. SPA CLIENT-SIDE ROUTING ━━━
-# If the requested file/directory doesn't exist, serve index.html
-# so React Router can handle the route.
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.html [QSA,L]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # If the file or directory physically exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Don't rewrite missing static assets (.js, .css, images, fonts) to index.html.
+    # Serving index.html for a .js file causes "Unexpected token '<'" MIME syntax error and a white screen.
+    RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json|webp|pdf|map)$ [NC]
+    RewriteRule ^ - [R=404,L]
+
+    # Rewrite all remaining routes to /index.html for React Router
+    RewriteRule ^ /index.html [L]
+</IfModule>
 
 # ━━━ 3. SECURITY HEADERS ━━━
 <IfModule mod_headers.c>

@@ -42,7 +42,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Create HTTP server
 const http = require('http');
@@ -98,6 +99,21 @@ const messageRoutes = require('./routes/messageRoutes');
 const adRoutes = require('./routes/adRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const path = require('path');
+const fs = require('fs');
+
+// Ensure uploads folder exists and is statically served with permissive CORS for images
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir, {
+  setHeaders: (res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+}));
 
 // Use routes (supporting both /api/v1 and /api)
 app.use(['/api/v1/auth', '/api/auth'], authRoutes);
@@ -109,6 +125,7 @@ app.use(['/api/v1/messages', '/api/messages'], messageRoutes);
 app.use(['/api/v1/ads', '/api/ads'], adRoutes);
 app.use(['/api/v1/tasks', '/api/tasks'], taskRoutes);
 app.use(['/api/v1/payments', '/api/payments'], paymentRoutes);
+app.use(['/api/v1/upload', '/api/upload'], uploadRoutes.router);
 
 // Root route
 app.get('/', (req, res) => {
@@ -124,7 +141,7 @@ app.get('/', (req, res) => {
 });
 
 // Health check
-app.get(['/api/v1/health', '/api/health'], (req, res) => {
+app.get(['/api/v1/health', '/api/health', '/health'], (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -143,7 +160,7 @@ app.get(['/api/v1/health/ai', '/api/health/ai'], (req, res) => {
   });
 });
 
-async function start() {
+async function initDatabase() {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
@@ -184,20 +201,27 @@ async function start() {
   } catch (error) {
     console.error('❌ Database startup error:', error.message);
   }
-
-  // Handle Passenger / local port binding
-  if (typeof PORT === 'string' && (PORT.startsWith('/') || PORT.startsWith('\\\\'))) {
-    server.listen(PORT, () => {
-      console.log(`✅ Backend running on Passenger socket: ${PORT}`);
-    });
-  } else {
-    server.listen(PORT, '0.0.0.0', () => {
-      console.log(`✅ Backend running at: http://localhost:${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/v1/health`);
-    });
-  }
 }
 
-start();
+// Start HTTP server immediately to prevent Phusion Passenger 503 timeouts
+const isSocketOrPassenger = typeof PORT === 'string' && (
+  PORT === 'passenger' ||
+  PORT.startsWith('/') ||
+  PORT.startsWith('\\\\') ||
+  isNaN(Number(PORT))
+);
+
+if (isSocketOrPassenger) {
+  server.listen(PORT, () => {
+    console.log(`✅ Backend running on Passenger socket: ${PORT}`);
+    initDatabase();
+  });
+} else {
+  server.listen(Number(PORT) || 5000, '0.0.0.0', () => {
+    console.log(`✅ Backend running at: http://localhost:${PORT || 5000}`);
+    console.log(`📊 Health check: http://localhost:${PORT || 5000}/health`);
+    initDatabase();
+  });
+}
 
 module.exports = app;

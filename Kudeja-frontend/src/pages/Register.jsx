@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isValidPasswordStrength, getPasswordRequirementsText } from '../utils/validation';
 import { GoogleLogin } from '@react-oauth/google';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import toast from 'react-hot-toast';
 import './Register.css';
 
@@ -15,6 +16,8 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
   const { register, googleLogin, error: authError } = useAuth();
 
@@ -110,25 +113,35 @@ const Register = () => {
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Create a password"
-            />
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Create a password"
+              />
+              <button type="button" className="eye-toggle" onClick={() => setShowPassword(p => !p)}>
+                {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
           </div>
           <div className="form-group">
             <label>Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              placeholder="Confirm your password"
-            />
+            <div className="password-wrapper">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                placeholder="Confirm your password"
+              />
+              <button type="button" className="eye-toggle" onClick={() => setShowConfirm(p => !p)}>
+                {showConfirm ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn-primary" disabled={submitting}>
             {submitting ? 'Creating account…' : 'Register'}

@@ -14,7 +14,9 @@ import './ProductDetail.css';
 import fallbackPlaceholder from '../images/images.jpg';
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  // Strip any trailing brackets, malformed markdown, or appended URLs
+  const id = rawId ? (rawId.match(/^[a-zA-Z0-9_-]+/)?.[0] || rawId) : rawId;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMessages } from '../context/MessageContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -9,6 +10,7 @@ import toast from 'react-hot-toast';
 import './LiveChat.css';
 
 const LiveChatWidget = () => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [chatHistory, setChatHistory] = useState([]);
@@ -145,34 +147,92 @@ const LiveChatWidget = () => {
         }
     };
 
+    const renderTextWithBreaks = (text, keyPrefix) => {
+        const lines = text.split('\n');
+        return (
+            <span key={keyPrefix}>
+                {lines.map((line, idx) => (
+                    <React.Fragment key={idx}>
+                        {line}
+                        {idx < lines.length - 1 && <br />}
+                    </React.Fragment>
+                ))}
+            </span>
+        );
+    };
+
     const formatMessage = (content) => {
         if (!content) return content;
         
-        // Match standard links or my custom 🔗 link format
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const parts = content.split(urlRegex);
-        
-        return parts.map((part, i) => {
-            if (part.match(urlRegex)) {
-                // If it's a product link, make it a button
-                if (part.includes('/product/')) {
-                    return (
-                        <a 
-                            key={i} 
-                            href={part} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="chat-product-link"
-                        >
-                            View Product Details
-                        </a>
-                    );
+        // Clean up common AI malformations like [url[url]] or duplicated brackets
+        let cleaned = content.replace(/\[\s*(https?:\/\/[^\s\]]+)\s*\[\s*(?:https?:\/\/[^\s\]]+)\s*\]\s*\]/g, '$1');
+        cleaned = cleaned.replace(/\[\s*(https?:\/\/[^\s\]]+)\s*\]/g, '$1');
+
+        // Regex to match:
+        // 1. Markdown link: [text](url)
+        // 2. Standalone URL or relative product link
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+|\/product\/[^\s\)]+)\)|(https?:\/\/[^\s<>"'{}|\\^`\[\]]+|\/product\/[a-zA-Z0-9_-]+)/g;
+
+        const elements = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(cleaned)) !== null) {
+            if (match.index > lastIndex) {
+                const textChunk = cleaned.substring(lastIndex, match.index);
+                // Clean up any orphan bracket right before the link (e.g. "here: [")
+                const cleanChunk = textChunk.replace(/\[\s*$/, '');
+                if (cleanChunk) {
+                    elements.push(renderTextWithBreaks(cleanChunk, `txt-${lastIndex}`));
                 }
-                // Regular link
-                return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className='chat-url'>{part}</a>;
             }
-            return part;
-        });
+
+            const isMarkdown = Boolean(match[1] && match[2]);
+            const label = isMarkdown ? match[1] : null;
+            let rawUrl = isMarkdown ? match[2] : match[3];
+
+            if (!isMarkdown) {
+                rawUrl = rawUrl.replace(/[.,;:!?)]+$/, '');
+            }
+
+            // Extract clean product ID to guarantee 100% correct navigation
+            const productMatch = rawUrl.match(/\/product\/([a-zA-Z0-9_-]+)/);
+            if (productMatch) {
+                const productId = productMatch[1];
+                elements.push(
+                    <button
+                        key={`prod-${match.index}`}
+                        onClick={() => navigate(`/product/${productId}`)}
+                        className="chat-product-link"
+                    >
+                        🛍️ {label && !label.startsWith('http') ? label : 'View Product Details'}
+                    </button>
+                );
+            } else {
+                elements.push(
+                    <a
+                        key={`link-${match.index}`}
+                        href={rawUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="chat-url"
+                    >
+                        {label || rawUrl}
+                    </a>
+                );
+            }
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        if (lastIndex < cleaned.length) {
+            const remaining = cleaned.substring(lastIndex).replace(/^\]/, '');
+            if (remaining) {
+                elements.push(renderTextWithBreaks(remaining, `txt-${lastIndex}`));
+            }
+        }
+
+        return elements;
     };
 
     // No longer hiding for admins so they can test the AI features

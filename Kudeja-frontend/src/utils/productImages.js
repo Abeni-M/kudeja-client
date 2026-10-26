@@ -56,11 +56,18 @@ function isUrl(value) {
 
 export function getProductImageUrl(image) {
   if (!image) return getFallbackImageUrl();
-  if (isUrl(image)) return image;
-
   const raw = String(image).trim();
-  
-  // If the image is already a relative path starting with '/', just return it as is
+  if (isUrl(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return raw;
+  }
+
+  // Prepend backend host to /uploads/ paths so deployed frontend fetches from backend server
+  if (raw.startsWith('/uploads') || raw.startsWith('uploads')) {
+    const backendOrigin = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+    const cleanPath = raw.startsWith('/') ? raw : `/${raw}`;
+    return backendOrigin ? `${backendOrigin}${cleanPath}` : cleanPath;
+  }
+
   if (raw.startsWith('/')) {
     return raw;
   }
@@ -84,4 +91,3 @@ export function enrichProductsWithImages(products = []) {
     imageUrl: product?.imageUrl || getProductImageUrl(product?.image),
   }));
 }
-

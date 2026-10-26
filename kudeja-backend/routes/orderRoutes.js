@@ -39,7 +39,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { items, total, shippingAddress, paymentMethod } = req.body;
+    const { items, total, shippingAddress, paymentMethod, paymentReceipt, payment_receipt } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Order items are required' });
@@ -71,6 +71,7 @@ router.post('/', protect, async (req, res) => {
       total: totalNumber,
       shipping_address: shippingAddress || null,
       payment_method: paymentMethod || 'Cash on Delivery',
+      payment_receipt: paymentReceipt || payment_receipt || null,
       status: 'pending',
     });
 

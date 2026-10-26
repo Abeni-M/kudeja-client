@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllOrders, updateOrderStatus, deleteOrder } from '../../services/orderService';
+import { resolveMediaUrl } from '../../services/uploadService';
 import { LuTrash, LuCheck, LuX, LuPackageCheck, LuDownload, LuRefreshCw } from 'react-icons/lu';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../../utils/formatters';
@@ -10,6 +11,7 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const load = async () => {
     try {
@@ -138,6 +140,8 @@ export default function AdminOrders() {
               <tr>
                 <th>Order ID</th>
                 <th>Date</th>
+                <th>Payment</th>
+                <th>Receipt</th>
                 <th>Total (ETB)</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -149,6 +153,41 @@ export default function AdminOrders() {
                   <tr>
                     <td>{String(order.id).slice(0, 8)}...</td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                        {order.payment_method || 'Bank Transfer'}
+                      </span>
+                    </td>
+                    <td>
+                      {order.payment_receipt ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceipt(order.payment_receipt)}
+                          style={{
+                            background: 'none',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '6px',
+                            padding: '3px 6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.75rem',
+                            color: 'var(--primary, #d11b1b)',
+                            fontWeight: 600
+                          }}
+                        >
+                          <img
+                            src={resolveMediaUrl(order.payment_receipt)}
+                            alt="Receipt"
+                            style={{ width: '22px', height: '22px', objectFit: 'cover', borderRadius: '4px' }}
+                          />
+                          <span>View Proof</span>
+                        </button>
+                      ) : (
+                        <span style={{ color: 'var(--admin-muted)', fontSize: '0.75rem' }}>No receipt</span>
+                      )}
+                    </td>
                     <td>
                       {formatPrice(order.total)}
                     </td>
@@ -225,6 +264,75 @@ export default function AdminOrders() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Payment Receipt Full Preview Modal */}
+      {selectedReceipt && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+          onClick={() => setSelectedReceipt(null)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-card, #1e293b)',
+              padding: '1.25rem',
+              borderRadius: '16px',
+              maxWidth: '650px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+              border: '1px solid var(--border-color)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Transfer Screenshot / Payment Proof</h3>
+              <button
+                onClick={() => setSelectedReceipt(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1 }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', textAlign: 'center', background: '#000', borderRadius: '10px', padding: '0.5rem' }}>
+              <img
+                src={resolveMediaUrl(selectedReceipt)}
+                alt="Payment Receipt Screenshot"
+                style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+              />
+            </div>
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <a
+                href={resolveMediaUrl(selectedReceipt)}
+                download="payment-receipt.png"
+                target="_blank"
+                rel="noreferrer"
+                className="admin-btn admin-btn--outline"
+                style={{ textDecoration: 'none' }}
+              >
+                Open Full Size
+              </a>
+              <button
+                onClick={() => setSelectedReceipt(null)}
+                className="admin-btn admin-btn--primary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -71,7 +71,7 @@ function AdminLayout() {
             className="admin-icon-btn"
             aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {sidebarOpen ? <LuX size={20} /> : <LuMenu size={20} />}
+            {sidebarOpen ? <LuX size={16} /> : <LuMenu size={16} />}
           </button>
         </div>
 
@@ -86,7 +86,7 @@ function AdminLayout() {
                     to={item.path}
                     className={`admin-nav-link ${isActive ? 'active' : ''}`}
                   >
-                    <Icon size={20} />
+                    <Icon size={16} />
                     {sidebarOpen && (
                       <>
                         <span className="flex-1">{item.label}</span>
@@ -118,7 +118,7 @@ function AdminLayout() {
             to="/"
             className="admin-nav-link admin-nav-link--muted"
           >
-            <LuLogOut size={20} />
+            <LuLogOut size={16} />
             {sidebarOpen && <span>Back to Store</span>}
           </Link>
         </div>

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllAds, createAd, updateAd, deleteAd } from '../../services/adService';
+import { uploadProductImage } from '../../services/productService';
 import toast from 'react-hot-toast';
-import { LuPlus, LuTrash2, LuPen, LuEye, LuEyeOff, LuImage, LuX, LuSearch } from 'react-icons/lu';
+import { LuPlus, LuTrash2, LuPen, LuEye, LuEyeOff, LuImage, LuX, LuSearch, LuUpload } from 'react-icons/lu';
 import '../../styles/admin.css';
 
 // ─── Load ALL local images from src/images/ via Vite glob ──────────────────
@@ -157,12 +158,55 @@ const ManageAds = () => {
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
 
+  const primaryFileInputRef = useRef(null);
+  const slideFileInputRef = useRef(null);
+
   const emptyForm = {
     companyName: '', address: '', description: '',
     website: '', phone: '', email: '', image: '', isActive: true,
     slideImages: [], slideInterval: 5, placement: 'sidebar'
   };
   const [formData, setFormData] = useState(emptyForm);
+
+    const handleDesktopImageSelect = async (file, forSlide = false) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose a valid image file');
+      return;
+    }
+
+    const toastId = toast.loading(forSlide ? 'Uploading slide image...' : 'Uploading ad image to server...');
+
+    try {
+      const res = await uploadProductImage(file);
+      const serverUrl = res?.data?.url || res?.url;
+      if (serverUrl) {
+        if (forSlide) {
+          setFormData(prev => ({ ...prev, slideImages: [...prev.slideImages, serverUrl] }));
+          toast.success('Slide image uploaded!', { id: toastId });
+        } else {
+          setFormData(prev => ({ ...prev, image: serverUrl }));
+          toast.success('Ad image uploaded!', { id: toastId });
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn('Upload error, falling back to local preview:', err);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      if (forSlide) {
+        setFormData(prev => ({ ...prev, slideImages: [...prev.slideImages, dataUrl] }));
+        toast.success('Slide image loaded (offline preview)', { id: toastId });
+      } else {
+        setFormData(prev => ({ ...prev, image: dataUrl }));
+        toast.success('Image loaded (offline preview)', { id: toastId });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const fetchAds = async () => {
     try {
@@ -419,35 +463,103 @@ const ManageAds = () => {
                 </p>
               </div>
 
+              {/* Hidden file inputs for local desktop image selection */}
+              {/* Hidden file inputs for local desktop image selection */}
+              <input
+                type="file"
+                ref={primaryFileInputRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleDesktopImageSelect(file, false);
+                  e.target.value = '';
+                }}
+              />
+              <input
+                type="file"
+                ref={slideFileInputRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleDesktopImageSelect(file, true);
+                  e.target.value = '';
+                }}
+              />
+
               {/* ── Image Field ── */}
               <div className="admin-form-group">
-                <label>Ad Image *</label>
-
-                {/* Input + Gallery button row */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                  <input
-                    type="text"
-                    style={{ ...inputStyle, flex: 1 }}
-                    value={formData.image}
-                    onChange={set('image')}
-                    required
-                    placeholder="Paste URL or click 📁 to pick from library"
-                  />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ margin: 0, fontWeight: 600 }}>Ad Image *</label>
                   <button
                     type="button"
-                    className="admin-btn admin-btn-outline"
+                    className="admin-btn admin-btn--outline"
                     onClick={() => setShowImagePicker(true)}
                     title="Pick from local image library"
-                    style={{ flexShrink: 0, gap: '0.35rem', whiteSpace: 'nowrap' }}
+                    style={{ gap: '0.4rem', fontSize: '0.8rem', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center' }}
                   >
-                    <LuImage size={16} />
-                    Pick
+                    <LuImage size={14} /> Pick from Library
                   </button>
                 </div>
 
+                {/* Unified Drag and Drop / Choose Image Zone */}
+                <div
+                  className="admin-image-upload-zone"
+                  style={{
+                    border: '2px dashed var(--border-color)',
+                    borderRadius: '10px',
+                    padding: '1.25rem 1rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: 'var(--bg-body)',
+                    marginBottom: '0.6rem'
+                  }}
+                  onClick={() => primaryFileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                  onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.borderColor = 'var(--border-color)';
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleDesktopImageSelect(file, false);
+                  }}
+                >
+                  <LuUpload size={28} style={{ color: 'var(--primary)', marginBottom: '0.35rem' }} />
+                  {formData.image ? (
+                    <div>
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: 600 }}>
+                        ✓ Ad image selected
+                      </p>
+                      <span className="admin-btn admin-btn--outline" style={{ fontSize: '0.78rem', padding: '0.25rem 0.6rem' }}>
+                        Click to change image
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="admin-btn admin-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '0.45rem 1rem', marginBottom: '0.4rem', pointerEvents: 'none' }}>
+                        <LuUpload size={14} /> Choose Image
+                      </span>
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--admin-muted)' }}>
+                        or drag &amp; drop an image here (max 5 MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input for direct URL fallback */}
+                <input
+                  type="text"
+                  style={{ ...inputStyle, fontSize: '0.85rem' }}
+                  value={formData.image}
+                  onChange={set('image')}
+                  required
+                  placeholder="Or paste an image URL directly"
+                />
+
                 {/* Live Preview */}
                 {formData.image && (
-                  <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--primary, #d11b1b)' }}>
+                  <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--primary, #d11b1b)', marginTop: '0.6rem' }}>
                     <img
                       src={formData.image}
                       alt="Preview"
@@ -468,28 +580,30 @@ const ManageAds = () => {
                     </button>
                   </div>
                 )}
-
-                <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--admin-muted)' }}>
-                  💡 Tip: This is the primary / cover image for the ad.
-                </p>
               </div>
 
               {/* ── Multiple Slide Images ── */}
               <div className="admin-form-group">
-                <label>Additional Slideshow Images</label>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <label>Additional Slideshow Images (Choose from Desktop or Library)</label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-outline"
+                    onClick={() => slideFileInputRef.current?.click()}
+                    style={{ flex: 1, gap: '0.4rem', fontSize: '0.85rem' }}
+                  >
+                    <LuUpload size={16} /> Add from Desktop
+                  </button>
                   <button
                     type="button"
                     className="admin-btn admin-btn-outline"
                     onClick={() => {
-                      // We'll repurpose the ImagePicker for adding to the array
                       setShowImagePicker(true);
-                      // Temporarily flag that we are picking for the SLIDESHOW
                       window.__pickingForSlideshow = true;
                     }}
-                    style={{ width: '100%', gap: '0.5rem' }}
+                    style={{ flex: 1, gap: '0.4rem', fontSize: '0.85rem' }}
                   >
-                    <LuPlus size={18} /> Add Image to Slideshow
+                    <LuImage size={16} /> Pick from Library
                   </button>
                 </div>
 
